@@ -1,0 +1,90 @@
+/* RESET */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: white;
+}
+
+/* APP */
+.app {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  color: #aaa;
+  max-width: 600px;
+  margin: auto;
+}
+
+.btn {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: purple;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #7a1fd1;
+}
+
+/* SECTION */
+.section {
+  padding: 60px 20px;
+}
+
+.section h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+/* CARD */
+.card {
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  background: #2a2a2a;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 20px;
+  border-top: 1px solid #333;
+  color: #777;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 32px;
+  }
+}

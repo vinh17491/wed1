@@ -1,0 +1,36 @@
+# Node.js
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# .NET
+bin/
+obj/
+/Properties/launchSettings.json
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+antigravity-awesome-skills-main.zip
+antigravity-awesome-skills-main/
+logs/
+publish/
