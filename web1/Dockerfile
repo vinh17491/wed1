@@ -1,5 +1,5 @@
 # Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
 # Copy everything and restore
@@ -10,7 +10,7 @@ RUN dotnet restore "./web1/web1.csproj"
 RUN dotnet publish "./web1/web1.csproj" -c Release -o /app/publish
 
 # Runtime Stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
