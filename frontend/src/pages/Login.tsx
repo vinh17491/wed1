@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts';
 import { LogIn, User, Lock, ArrowRight } from 'lucide-react';
 
 const Login: React.FC = () => {
