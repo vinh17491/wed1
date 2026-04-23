@@ -6,7 +6,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token');
+  const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -15,9 +15,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('admin_token');
-      if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
-        window.location.href = '/admin/login';
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (window.location.pathname.startsWith('/admin') || window.location.pathname === '/feedback') {
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
@@ -52,7 +53,8 @@ export const experienceApi = {
 };
 
 export const authApi = {
-  login: (data: { username: string; password: string }) => api.post('/auth/login', data),
+  login: (data: any) => api.post('/auth/login', data),
+  register: (data: any) => api.post('/auth/register', data),
 };
 
 export const chatApi = {
@@ -60,8 +62,9 @@ export const chatApi = {
 };
 
 export const feedbackApi = {
-  submit: (data: { name: string; email: string; rating: number; message: string }) => api.post('/feedback', data),
-  getAll: () => api.get('/feedback/admin'),
+  submit: (data: { rating: number; category: string; message: string }) => api.post('/feedback', data),
+  getAll: (params?: any) => api.get('/feedback/admin', { params }),
+  updateStatus: (id: number, status: string) => api.patch(`/feedback/admin/${id}/status`, status, { headers: { 'Content-Type': 'application/json' } }),
   delete: (id: number) => api.delete(`/feedback/admin/${id}`),
 };
 

@@ -126,6 +126,16 @@ public class AdminUserRepository : IAdminUserRepository
     public async Task<AdminUser?> GetByUsernameAsync(string username) =>
         await _ctx.AdminUsers.FirstOrDefaultAsync(u => u.Username == username);
 
+    public async Task<AdminUser?> GetByIdAsync(int id) =>
+        await _ctx.AdminUsers.FindAsync(id);
+
+    public async Task<AdminUser> CreateAsync(AdminUser user)
+    {
+        _ctx.AdminUsers.Add(user);
+        await _ctx.SaveChangesAsync();
+        return user;
+    }
+
     public async Task UpdateLastLoginAsync(int id)
     {
         var user = await _ctx.AdminUsers.FindAsync(id);
@@ -227,12 +237,36 @@ public class FeedbackRepository : IFeedbackRepository
         return feedback;
     }
 
-    public async Task<IEnumerable<Feedback>> GetAllAsync() =>
-        await _ctx.Feedbacks.OrderByDescending(f => f.CreatedAt).ToListAsync();
+    public async Task<IEnumerable<Feedback>> GetAllAsync(int? rating = null, string? category = null, string? username = null)
+    {
+        var query = _ctx.Feedbacks.AsQueryable();
+
+        if (rating.HasValue) query = query.Where(f => f.Rating == rating.Value);
+        if (!string.IsNullOrEmpty(category)) query = query.Where(f => f.Category == category);
+        if (!string.IsNullOrEmpty(username)) query = query.Where(f => f.Name.Contains(username));
+
+        return await query.OrderByDescending(f => f.CreatedAt).ToListAsync();
+    }
+
+    public async Task<Feedback?> GetByIdAsync(int id) =>
+        await _ctx.Feedbacks.FindAsync(id);
+
+    public async Task<Feedback> UpdateAsync(Feedback feedback)
+    {
+        _ctx.Feedbacks.Update(feedback);
+        await _ctx.SaveChangesAsync();
+        return feedback;
+    }
 
     public async Task DeleteAsync(int id)
     {
         var feedback = await _ctx.Feedbacks.FindAsync(id);
         if (feedback != null) { _ctx.Feedbacks.Remove(feedback); await _ctx.SaveChangesAsync(); }
+    }
+
+    public async Task<int> GetUserFeedbackCountInLast24HoursAsync(int userId)
+    {
+        var yesterday = DateTime.UtcNow.AddDays(-1);
+        return await _ctx.Feedbacks.CountAsync(f => f.UserId == userId && f.CreatedAt > yesterday);
     }
 }

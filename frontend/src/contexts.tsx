@@ -28,24 +28,53 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export const useTheme = () => useContext(ThemeContext);
 
 // Auth context
-interface AuthContextType { isAdmin: boolean; login: (token: string) => void; logout: () => void; }
-const AuthContext = createContext<AuthContextType>({ isAdmin: false, login: () => {}, logout: () => {} });
+interface User {
+  username: string;
+  role: string;
+}
+
+interface AuthContextType { 
+  isAdmin: boolean; 
+  isAuthenticated: boolean;
+  user: User | null;
+  login: (token: string, username: string, role: string) => void; 
+  logout: () => void; 
+}
+
+const AuthContext = createContext<AuthContextType>({ 
+  isAdmin: false, 
+  isAuthenticated: false,
+  user: null,
+  login: () => {}, 
+  logout: () => {} 
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAdmin, setIsAdmin] = useState(() => !!localStorage.getItem('admin_token'));
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'));
 
-  const login = (token: string) => {
-    localStorage.setItem('admin_token', token);
-    setIsAdmin(true);
+  const login = (token: string, username: string, role: string) => {
+    const userData = { username, role };
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem('admin_token');
-    setIsAdmin(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
+  const isAdmin = user?.role === 'Admin';
+
   return (
-    <AuthContext.Provider value={{ isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ isAdmin, isAuthenticated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

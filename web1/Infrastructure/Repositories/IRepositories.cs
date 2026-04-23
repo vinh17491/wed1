@@ -38,6 +38,8 @@ public interface IExperienceRepository
 public interface IAdminUserRepository
 {
     Task<AdminUser?> GetByUsernameAsync(string username);
+    Task<AdminUser?> GetByIdAsync(int id);
+    Task<AdminUser> CreateAsync(AdminUser user);
     Task UpdateLastLoginAsync(int id);
 }
 
@@ -59,6 +61,9 @@ public interface IAnalyticsRepository
 public interface IFeedbackRepository
 {
     Task<Feedback> CreateAsync(Feedback feedback);
-    Task<IEnumerable<Feedback>> GetAllAsync();
+    Task<IEnumerable<Feedback>> GetAllAsync(int? rating = null, string? category = null, string? username = null);
+    Task<Feedback?> GetByIdAsync(int id);
+    Task<Feedback> UpdateAsync(Feedback feedback);
     Task DeleteAsync(int id);
+    Task<int> GetUserFeedbackCountInLast24HoursAsync(int userId);
 }

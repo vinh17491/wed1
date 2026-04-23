@@ -11,6 +11,7 @@ namespace PortfolioAPI.Application.Services;
 public interface IAuthService
 {
     Task<LoginResponseDto?> LoginAsync(LoginDto dto);
+    Task<bool> RegisterAsync(RegisterDto dto);
 }
 
 public class AuthService : IAuthService
@@ -40,6 +41,7 @@ public class AuthService : IAuthService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role)
         };
 
@@ -57,6 +59,23 @@ public class AuthService : IAuthService
             user.Role,
             expires
         );
+    }
+
+    public async Task<bool> RegisterAsync(RegisterDto dto)
+    {
+        if (await _repo.GetByUsernameAsync(dto.Username) != null) return false;
+
+        var user = new AdminUser
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            Role = "User", // Default role
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _repo.CreateAsync(user);
+        return true;
     }
 }
 
@@ -243,35 +262,58 @@ public class PortfolioService : IPortfolioService
 
 public interface IFeedbackService
 {
-    Task<FeedbackDto> CreateAsync(CreateFeedbackDto dto);
-    Task<IEnumerable<FeedbackDto>> GetAllAsync();
+    Task<FeedbackDto> CreateAsync(CreateFeedbackDto dto, int userId);
+    Task<IEnumerable<FeedbackDto>> GetAllAsync(int? rating = null, string? category = null, string? username = null);
+    Task<bool> UpdateStatusAsync(int id, string status);
     Task<bool> DeleteAsync(int id);
 }
 
 public class FeedbackService : IFeedbackService
 {
     private readonly IFeedbackRepository _repo;
+    private readonly IAdminUserRepository _userRepo;
 
-    public FeedbackService(IFeedbackRepository repo)
+    public FeedbackService(IFeedbackRepository repo, IAdminUserRepository userRepo)
     {
         _repo = repo;
+        _userRepo = userRepo;
     }
 
-    public async Task<FeedbackDto> CreateAsync(CreateFeedbackDto dto)
+    public async Task<FeedbackDto> CreateAsync(CreateFeedbackDto dto, int userId)
     {
+        // Rate limit check
+        var count = await _repo.GetUserFeedbackCountInLast24HoursAsync(userId);
+        if (count >= 5) throw new Exception("You have reached the daily limit for feedback submissions (5 per day).");
+
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found.");
+
         var feedback = new Feedback
         {
-            Name = dto.Name,
-            Email = dto.Email,
+            Name = user.Username,
+            Email = user.Email,
             Rating = dto.Rating,
-            Message = dto.Message
+            Category = dto.Category,
+            Message = dto.Message,
+            Status = "Pending",
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow
         };
         var result = await _repo.CreateAsync(feedback);
         return MapFeedback(result);
     }
 
-    public async Task<IEnumerable<FeedbackDto>> GetAllAsync() =>
-        (await _repo.GetAllAsync()).Select(MapFeedback);
+    public async Task<IEnumerable<FeedbackDto>> GetAllAsync(int? rating = null, string? category = null, string? username = null) =>
+        (await _repo.GetAllAsync(rating, category, username)).Select(MapFeedback);
+
+    public async Task<bool> UpdateStatusAsync(int id, string status)
+    {
+        var feedback = await _repo.GetByIdAsync(id);
+        if (feedback == null) return false;
+        feedback.Status = status;
+        await _repo.UpdateAsync(feedback);
+        return true;
+    }
 
     public async Task<bool> DeleteAsync(int id)
     {
@@ -280,5 +322,5 @@ public class FeedbackService : IFeedbackService
     }
 
     private static FeedbackDto MapFeedback(Feedback f) =>
-        new(f.Id, f.Name, f.Email, f.Rating, f.Message, f.CreatedAt);
+        new(f.Id, f.Name, f.Email, f.Rating, f.Category, f.Message, f.Status, f.CreatedAt);
 }

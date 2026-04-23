@@ -25,6 +25,15 @@ public class AuthController : ControllerBase
             ? Unauthorized(new ApiResponseDto<object>(false, "Invalid credentials", null))
             : Ok(new ApiResponseDto<LoginResponseDto>(true, "Login successful", result));
     }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        var result = await _authService.RegisterAsync(dto);
+        return result
+            ? Ok(new ApiResponseDto<object>(true, "Registration successful", null))
+            : BadRequest(new ApiResponseDto<object>(false, "Username already exists", null));
+    }
 }
 
 [ApiController]

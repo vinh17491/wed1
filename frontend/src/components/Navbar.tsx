@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../contexts';
+import { useTheme, useAuth } from '../contexts';
 import i18n from '../i18n';
 import './Navbar.css';
 
 export default function Navbar() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState(i18n.language);
@@ -28,19 +30,21 @@ export default function Navbar() {
 
   const links = [
     { href: '/', label: t('nav.home') },
-    { href: '/#about', label: t('nav.about') },
-    { href: '/#skills', label: t('nav.skills') },
-    { href: '/#projects', label: t('nav.projects') },
-    { href: '/#experience', label: t('nav.experience') },
-    { href: '/#contact', label: t('nav.contact') },
+    { href: '/feedback', label: 'Feedback' },
     { href: '/memes', label: t('nav.memes') },
   ];
 
+  if (isAdmin) {
+    links.push({ href: '/admin', label: 'Admin' });
+  }
+
   const handleNavClick = (href: string) => {
     setMobileOpen(false);
-    if (href.includes('#')) {
+    if (href.includes('#') && location.pathname === '/') {
       const id = href.split('#')[1];
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate(href);
     }
   };
 
@@ -52,13 +56,12 @@ export default function Navbar() {
           <ul className="navbar__links">
             {links.map(link => (
               <li key={link.href}>
-                <a
-                  href={link.href}
+                <button
                   className={`navbar__link ${location.pathname === link.href ? 'navbar__link--active' : ''}`}
                   onClick={() => handleNavClick(link.href)}
                 >
                   {link.label}
-                </a>
+                </button>
               </li>
             ))}
           </ul>
@@ -69,6 +72,26 @@ export default function Navbar() {
             <button className="navbar__theme-btn" onClick={toggleTheme}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <span className="text-blue-400 text-sm font-bold hidden md:block">{user?.username}</span>
+                <button 
+                  onClick={logout}
+                  className="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-1 rounded-lg text-sm font-bold transition-all"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
+              >
+                Đăng nhập
+              </Link>
+            )}
+
             <button
               className="navbar__menu-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -89,18 +112,22 @@ export default function Navbar() {
       </nav>
       <div className={`navbar__mobile ${mobileOpen ? 'navbar__mobile--open' : ''}`}>
         {links.map(link => (
-          <a
+          <button
             key={link.href}
-            href={link.href}
             className="navbar__mobile-link"
             onClick={() => handleNavClick(link.href)}
           >
             {link.label}
-          </a>
+          </button>
         ))}
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
           <button className="navbar__lang-btn" onClick={toggleLang}>{lang === 'en' ? 'Tiếng Việt' : 'English'}</button>
           <button className="navbar__theme-btn" onClick={toggleTheme}>{theme === 'dark' ? '☀️ Light' : '🌙 Dark'}</button>
+          {!isAuthenticated ? (
+             <Link to="/login" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full text-center">Đăng nhập</Link>
+          ) : (
+             <button onClick={logout} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full text-center">Đăng xuất ({user?.username})</button>
+          )}
         </div>
       </div>
     </>

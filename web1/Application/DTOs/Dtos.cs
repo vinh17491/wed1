@@ -70,6 +70,7 @@ public record VisitorAnalyticsDto(int Id, string Page, DateTime VisitTime, int D
 public record TrackVisitDto(string Page, int Duration, string DeviceType);
 
 public record LoginDto(string Username, string Password);
+public record RegisterDto(string Username, string Email, string Password);
 public record LoginResponseDto(string Token, string Username, string Role, DateTime Expires);
 
 public record ChatRequestDto(string Message, string Language = "en");
@@ -88,5 +89,5 @@ public record AnalyticsSummaryDto(
 );
 public record DailyVisitDto(string Date, int Count);
 
-public record FeedbackDto(int Id, string Name, string Email, int Rating, string Message, DateTime CreatedAt);
-public record CreateFeedbackDto(string Name, string Email, int Rating, string Message);
+public record FeedbackDto(int Id, string Name, string Email, int Rating, string Category, string Message, string Status, DateTime CreatedAt);
+public record CreateFeedbackDto(int Rating, string Category, string Message);
