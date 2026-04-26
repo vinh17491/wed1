@@ -40,6 +40,7 @@ public interface IAdminUserRepository
     Task<AdminUser?> GetByUsernameAsync(string username);
     Task<AdminUser?> GetByIdAsync(int id);
     Task<AdminUser> CreateAsync(AdminUser user);
+    Task<AdminUser?> GetByEmailAsync(string email);
     Task UpdateLastLoginAsync(int id);
 }
 

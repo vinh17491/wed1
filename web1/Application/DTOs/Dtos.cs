@@ -70,6 +70,7 @@ public record VisitorAnalyticsDto(int Id, string Page, DateTime VisitTime, int D
 public record TrackVisitDto(string Page, int Duration, string DeviceType);
 
 public record LoginDto(string Username, string Password);
+public record GoogleLoginDto(string IdToken);
 public record RegisterDto(string Username, string Email, string Password);
 public record LoginResponseDto(string Token, string Username, string Role, DateTime Expires);
 

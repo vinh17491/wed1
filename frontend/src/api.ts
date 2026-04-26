@@ -55,6 +55,7 @@ export const experienceApi = {
 export const authApi = {
   login: (data: any) => api.post('/auth/login', data),
   register: (data: any) => api.post('/auth/register', data),
+  googleLogin: (idToken: string) => api.post('/auth/google-login', { idToken }),
 };
 
 export const chatApi = {

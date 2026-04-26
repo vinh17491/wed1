@@ -34,6 +34,15 @@ public class AuthController : ControllerBase
             ? Ok(new ApiResponseDto<object>(true, "Registration successful", null))
             : BadRequest(new ApiResponseDto<object>(false, "Username already exists", null));
     }
+
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+    {
+        var result = await _authService.GoogleLoginAsync(dto);
+        return result == null
+            ? Unauthorized(new ApiResponseDto<object>(false, "Invalid Google token", null))
+            : Ok(new ApiResponseDto<LoginResponseDto>(true, "Login successful", result));
+    }
 }
 
 [ApiController]

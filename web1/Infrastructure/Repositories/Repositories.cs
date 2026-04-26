@@ -136,6 +136,9 @@ public class AdminUserRepository : IAdminUserRepository
         return user;
     }
 
+    public async Task<AdminUser?> GetByEmailAsync(string email) =>
+        await _ctx.AdminUsers.FirstOrDefaultAsync(u => u.Email == email);
+
     public async Task UpdateLastLoginAsync(int id)
     {
         var user = await _ctx.AdminUsers.FindAsync(id);

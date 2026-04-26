@@ -21,9 +21,21 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Host.UseSerilog();
 
-// Database (PostgreSQL / Supabase)
+// Database Configuration (Tự động nhận diện SQLite hoặc PostgreSQL)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (string.IsNullOrEmpty(connectionString) || connectionString.Contains("Data Source=") || connectionString.Contains(".db"))
+    {
+        // Mặc định dùng SQLite nếu chuỗi kết nối trống hoặc là định dạng SQLite
+        options.UseSqlite(connectionString ?? "Data Source=portfolio.db");
+    }
+    else
+    {
+        // Chỉ dùng PostgreSQL nếu chuỗi kết nối có vẻ hợp lệ (không chứa Data Source)
+        options.UseNpgsql(connectionString);
+    }
+});
 
 // Repositories
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();

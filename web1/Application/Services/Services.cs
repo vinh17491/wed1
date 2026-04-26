@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using Google.Apis.Auth;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ public interface IAuthService
 {
     Task<LoginResponseDto?> LoginAsync(LoginDto dto);
     Task<bool> RegisterAsync(RegisterDto dto);
+    Task<LoginResponseDto?> GoogleLoginAsync(GoogleLoginDto dto);
 }
 
 public class AuthService : IAuthService
@@ -33,6 +35,74 @@ public class AuthService : IAuthService
 
         await _repo.UpdateLastLoginAsync(user.Id);
 
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expires = DateTime.UtcNow.AddHours(24);
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims: claims,
+            expires: expires,
+            signingCredentials: creds
+        );
+
+        return new LoginResponseDto(
+            new JwtSecurityTokenHandler().WriteToken(token),
+            user.Username,
+            user.Role,
+            expires
+        );
+    }
+
+    public async Task<LoginResponseDto?> GoogleLoginAsync(GoogleLoginDto dto)
+    {
+        try
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["Google:ClientId"] }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, settings);
+            if (payload == null) return null;
+
+            var user = await _repo.GetByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                // Create user if not exists
+                user = new AdminUser
+                {
+                    Username = payload.Email.Split('@')[0],
+                    Email = payload.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()), // Random password
+                    Role = "User",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _repo.CreateAsync(user);
+            }
+
+            await _repo.UpdateLastLoginAsync(user.Id);
+
+            // Generate JWT (Reuse logic from LoginAsync or extract to helper)
+            return GenerateJwtToken(user);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private LoginResponseDto GenerateJwtToken(AdminUser user)
+    {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expires = DateTime.UtcNow.AddHours(24);
