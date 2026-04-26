@@ -73,11 +73,16 @@ public class AuthService : IAuthService
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, settings);
-            if (payload == null) return null;
+            if (payload == null) 
+            {
+                Console.WriteLine("Google verification failed: Payload is null");
+                return null;
+            }
 
             var user = await _repo.GetByEmailAsync(payload.Email);
             if (user == null)
             {
+                Console.WriteLine($"Creating new user for Google login: {payload.Email}");
                 // Create user if not exists
                 user = new AdminUser
                 {
@@ -92,11 +97,13 @@ public class AuthService : IAuthService
 
             await _repo.UpdateLastLoginAsync(user.Id);
 
-            // Generate JWT (Reuse logic from LoginAsync or extract to helper)
             return GenerateJwtToken(user);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"Google Login Error: {ex.Message}");
+            if (ex.InnerException != null)
+                Console.WriteLine($"Inner Error: {ex.InnerException.Message}");
             return null;
         }
     }
