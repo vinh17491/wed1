@@ -5,8 +5,8 @@ import { authApi } from '../api';
 import { useAuth } from '../contexts';
 import { useGoogleLogin } from '@react-oauth/google';
 import { 
-  LogIn, 
   User, 
+  UserPlus,
   Lock, 
   ArrowRight, 
   AlertCircle, 
@@ -24,10 +24,15 @@ import {
   Pickaxe,
   Sword,
   TreeDeciduous,
-  Cloud,
+  Cpu,
   Layers,
-  Cpu
+  X,
+  CheckCircle2,
+  Users,
+  Trophy
 } from 'lucide-react';
+import MinecraftLoginModal from '../components/MinecraftLoginModal';
+
 
 type AuthView = 'method' | 'credentials' | 'minecraft';
 
@@ -135,6 +140,11 @@ const ProviderCard: React.FC<ProviderCardProps> = ({
   );
 };
 
+// --- Minecraft Portal Modal ---
+
+// Old MinecraftPortal removed in favor of MinecraftLoginModal
+
+
 // --- Main Component ---
 
 const Login: React.FC = () => {
@@ -144,6 +154,7 @@ const Login: React.FC = () => {
   const from = (location.state as any)?.from?.pathname || '/';
 
   const [view, setView] = useState<AuthView>('method');
+  const [isMinecraftOpen, setIsMinecraftOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -216,7 +227,7 @@ const Login: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Background Layer: Minecraft Launcher */}
+        {/* Background Layer: Minecraft Launcher Background */}
         {view === 'minecraft' && (
           <motion.div 
             key="minecraft-bg"
@@ -229,14 +240,8 @@ const Login: React.FC = () => {
               className="absolute inset-0 bg-cover bg-center brightness-50"
               style={{ backgroundImage: 'url("https://www.anhnghethuatdulich.com/wp-content/uploads/2025/09/bau-khong-khi-tinh-khoi-khe-goi-nho-su-nhe-nhom-trong-long.jpg")' }}
             />
-
-
-
-
             <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-80" />
-
             
-            {/* 3D-like Floating Elements */}
             <FloatingBlock x="left-[10%]" y="top-[15%]" delay={0} />
             <FloatingBlock x="right-[15%]" y="top-[20%]" delay={1} />
             <FloatingBlock x="left-[20%]" y="bottom-[30%]" delay={2} />
@@ -313,8 +318,8 @@ const Login: React.FC = () => {
                 <ProviderCard 
                   icon={<Box className="w-6 h-6" />}
                   title="Minecraft"
-                  subtitle="TLauncher & Legacy Vibe"
-                  onClick={() => setView('minecraft')}
+                  subtitle="Premium Auth Experience"
+                  onClick={() => setIsMinecraftOpen(true)}
                   variant="minecraft"
                 />
                 <ProviderCard 
@@ -389,67 +394,6 @@ const Login: React.FC = () => {
                 </div>
               </motion.div>
             )}
-
-            {view === 'minecraft' && (
-              <motion.div
-                key="minecraft"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="space-y-8"
-              >
-                <div className="bg-slate-900/80 border-4 border-slate-700 p-8 rounded-none relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  
-                  <div className="relative z-10 space-y-6">
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-green-500 flex items-center gap-2">
-                          <User className="w-3 h-3" /> Player Name
-                        </label>
-                        <input 
-                          type="text" 
-                          placeholder="STEVE_1749"
-                          className="w-full bg-black border-2 border-slate-700 p-4 font-mono text-green-400 focus:border-green-500 outline-none transition-all placeholder:opacity-20"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-green-500 flex items-center gap-2">
-                          <Cpu className="w-3 h-3" /> Version Selector
-                        </label>
-                        <div className="w-full bg-black border-2 border-slate-700 p-4 font-mono text-green-400 flex justify-between items-center cursor-pointer hover:border-green-500/50 transition-all">
-                          <span>Release 1.21.1</span>
-                          <Layers className="w-4 h-4 opacity-50" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        className="bg-green-600 hover:bg-green-500 text-white font-mono uppercase tracking-widest py-4 border-b-4 border-green-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg shadow-green-900/40 flex items-center justify-center gap-3"
-                      >
-                        <Play className="w-5 h-5 fill-white" />
-                        Enter Game
-                      </button>
-                      <button
-                        onClick={() => setView('method')}
-                        className="bg-slate-800 hover:bg-slate-700 text-white font-mono uppercase tracking-widest py-4 border-b-4 border-slate-900 active:border-b-0 active:translate-y-1 transition-all"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center px-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 animate-ping rounded-full" />
-                    <span className="text-[10px] font-mono text-green-500/70 uppercase tracking-widest">Server Online: 2,451 players</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-slate-600 uppercase">Build: 2026.04.27</span>
-                </div>
-              </motion.div>
-            )}
           </AnimatePresence>
         </div>
 
@@ -460,6 +404,21 @@ const Login: React.FC = () => {
           <Link to="/news" className="text-sm font-semibold text-slate-500 hover:text-white transition-colors">News</Link>
         </div>
       </motion.div>
+
+      {/* Minecraft Login Modal Experience */}
+      <MinecraftLoginModal 
+        isOpen={isMinecraftOpen}
+        onClose={() => setIsMinecraftOpen(false)}
+        onLogin={() => {
+          setIsMinecraftOpen(false);
+          setView('minecraft');
+        }}
+        onRegister={() => {
+          setIsMinecraftOpen(false);
+          navigate('/register');
+        }}
+      />
+
     </div>
   );
 };
