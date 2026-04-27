@@ -16,39 +16,159 @@ import {
   EyeOff, 
   ArrowLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Gamepad2,
+  Play,
+  Box,
+  Diamond,
+  Pickaxe,
+  Sword,
+  TreeDeciduous,
+  Cloud,
+  Layers,
+  Cpu
 } from 'lucide-react';
 
-type AuthView = 'method' | 'credentials';
+type AuthView = 'method' | 'credentials' | 'minecraft';
+
+// --- Sub-components ---
+
+const MinecraftItemMarquee: React.FC = () => {
+  const items = [
+    <Box className="w-6 h-6" />,
+    <Diamond className="w-6 h-6" />,
+    <Pickaxe className="w-6 h-6" />,
+    <Sword className="w-6 h-6" />,
+    <TreeDeciduous className="w-6 h-6" />,
+    <Box className="w-6 h-6" />,
+    <Diamond className="w-6 h-6" />,
+    <Pickaxe className="w-6 h-6" />,
+  ];
+
+  return (
+    <div className="absolute bottom-0 left-0 w-full overflow-hidden bg-black/40 backdrop-blur-md border-t-4 border-green-600/50 py-3">
+      <motion.div 
+        animate={{ x: [0, -1000] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="flex gap-12 items-center whitespace-nowrap px-4"
+      >
+        {[...items, ...items, ...items].map((item, i) => (
+          <div key={i} className="flex items-center gap-2 text-green-400 opacity-60 hover:opacity-100 hover:scale-110 transition-all cursor-default">
+            {item}
+            <span className="font-mono text-[10px] uppercase tracking-tighter">Pixel_Item_{i % 8}</span>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+const FloatingBlock: React.FC<{ delay?: number; x: string; y: string }> = ({ delay = 0, x, y }) => (
+  <motion.div
+    initial={{ y: 0, rotate: 0 }}
+    animate={{ 
+      y: [0, -20, 0],
+      rotate: [0, 10, -10, 0]
+    }}
+    transition={{ 
+      duration: 5, 
+      repeat: Infinity, 
+      ease: "easeInOut",
+      delay 
+    }}
+    className={`absolute ${x} ${y} p-3 bg-green-500/10 border-2 border-green-500/20 rounded-xl backdrop-blur-sm z-0`}
+  >
+    <Box className="w-8 h-8 text-green-500/40" />
+  </motion.div>
+);
+
+interface ProviderCardProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+  isLoading?: boolean;
+  className?: string;
+  variant?: 'default' | 'minecraft' | 'guest';
+}
+
+const ProviderCard: React.FC<ProviderCardProps> = ({ 
+  icon, title, subtitle, onClick, isLoading, className, variant = 'default' 
+}) => {
+  const isMinecraft = variant === 'minecraft';
+  const isGuest = variant === 'guest';
+
+  return (
+    <motion.button
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      disabled={isLoading}
+      className={`
+        w-full group relative flex items-center p-4 rounded-2xl transition-all duration-300 border
+        ${isMinecraft ? 'bg-green-900/40 border-green-500/50 shadow-[4px_4px_0px_rgba(34,197,94,0.3)]' : 
+          isGuest ? 'bg-indigo-600 hover:bg-indigo-500 border-indigo-400/30' : 
+          'bg-slate-800/50 hover:bg-slate-700/50 border-white/5'}
+        ${className}
+      `}
+    >
+      <div className={`
+        w-12 h-12 rounded-xl flex items-center justify-center mr-4 transition-transform group-hover:scale-110
+        ${isMinecraft ? 'bg-green-500/20 text-green-400' : 
+          isGuest ? 'bg-white/20 text-white' : 
+          'bg-white/5 text-slate-300'}
+      `}>
+        {isLoading ? (
+          <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        ) : icon}
+      </div>
+      <div className="flex-1 text-left">
+        <h3 className={`font-bold text-lg leading-tight ${isMinecraft ? 'font-mono uppercase tracking-wider text-green-400' : 'text-white'}`}>
+          {title}
+        </h3>
+        <p className={`text-sm ${isMinecraft ? 'text-green-500/70 font-mono' : 'text-slate-400'}`}>
+          {subtitle}
+        </p>
+      </div>
+      <ChevronRight className={`w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all ${isMinecraft ? 'text-green-400' : 'text-slate-500'}`} />
+    </motion.button>
+  );
+};
+
+// --- Main Component ---
 
 const Login: React.FC = () => {
-  // Navigation & Auth
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const from = (location.state as any)?.from?.pathname || '/';
 
-  // State
   const [view, setView] = useState<AuthView>('method');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isGithubLoading, setIsGithubLoading] = useState(false);
 
-  // Clear error when switching views
+  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({
+    system: false,
+    google: false,
+    github: false,
+    minecraft: false,
+    guest: false
+  });
+
+  const setLoading = (key: string, value: boolean) => {
+    setIsLoading(prev => ({ ...prev, [key]: value }));
+  };
+
   useEffect(() => {
     setError('');
   }, [view]);
 
-  // Handlers
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setLoading('system', true);
     setError('');
     try {
       const res = await authApi.login({ username, password });
@@ -56,284 +176,288 @@ const Login: React.FC = () => {
       login(token, resUser, role);
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setError(err.response?.data?.message || 'Đăng nhập thất bại.');
     } finally {
-      setIsSubmitting(false);
+      setLoading('system', false);
     }
   };
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      setIsGoogleLoading(true);
-      setError('');
+      setLoading('google', true);
       try {
         const res = await authApi.googleLogin(tokenResponse.access_token);
         const { token, username: resUser, role } = res.data.data;
         login(token, resUser, role);
         navigate(from, { replace: true });
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Đăng nhập bằng Google thất bại.');
+      } catch (err) {
+        setError('Google Login failed.');
       } finally {
-        setIsGoogleLoading(false);
+        setLoading('google', false);
       }
-    },
-    onError: () => {
-      setError('Đăng nhập Google thất bại.');
-      setIsGoogleLoading(false);
     },
   });
 
-  const handleGithubLogin = () => {
-    // Placeholder for Github Login
-    setIsGithubLoading(true);
-    setTimeout(() => {
-      setError('Đăng nhập GitHub hiện đang được bảo trì.');
-      setIsGithubLoading(false);
-    }, 1000);
-  };
-
-  // Animation variants
-  const containerVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
-  };
-
-  const viewVariants = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020617] px-4 py-12 relative overflow-hidden font-inter selection:bg-indigo-500/30">
-      {/* Premium Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none" />
-      </div>
+      
+      {/* Background Layer: Standard SaaS */}
+      <AnimatePresence mode="wait">
+        {view !== 'minecraft' && (
+          <motion.div 
+            key="saas-bg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 overflow-hidden pointer-events-none"
+          >
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+          </motion.div>
+        )}
+
+        {/* Background Layer: Minecraft Launcher */}
+        {view === 'minecraft' && (
+          <motion.div 
+            key="minecraft-bg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 overflow-hidden"
+          >
+            <div 
+              className="absolute inset-0 bg-cover bg-center brightness-50"
+              style={{ backgroundImage: 'url("https://www.anhnghethuatdulich.com/wp-content/uploads/2025/09/bau-khong-khi-tinh-khoi-khe-goi-nho-su-nhe-nhom-trong-long.jpg")' }}
+            />
+
+
+
+
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-80" />
+
+            
+            {/* 3D-like Floating Elements */}
+            <FloatingBlock x="left-[10%]" y="top-[15%]" delay={0} />
+            <FloatingBlock x="right-[15%]" y="top-[20%]" delay={1} />
+            <FloatingBlock x="left-[20%]" y="bottom-[30%]" delay={2} />
+            <FloatingBlock x="right-[10%]" y="bottom-[25%]" delay={3} />
+            
+            <MinecraftItemMarquee />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.div 
-        variants={containerVariants}
-        initial="initial"
-        animate="animate"
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[440px] relative z-10"
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[480px] relative z-10"
       >
-        {/* Main Card */}
-        <div className="bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden">
-          {/* Brand/Logo Area (Inside Card) */}
-          <div className="flex flex-col items-center mb-10">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-indigo-500/20 border border-white/10"
-            >
-              <ShieldCheck className="w-9 h-9 text-white" />
-            </motion.div>
-            <h1 className="text-3xl font-bold text-white tracking-tight text-center">
-              {view === 'method' ? 'Chào mừng trở lại' : 'Đăng nhập'}
+        <div className={`
+          backdrop-blur-3xl border transition-all duration-500 overflow-hidden
+          ${view === 'minecraft' ? 'bg-black/60 border-green-500/30 rounded-none shadow-[0_0_50px_rgba(34,197,94,0.2)] p-12' : 'bg-slate-900/60 border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]'}
+        `}>
+          
+          {/* Header */}
+          <div className="flex flex-col items-center mb-10 text-center">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={view === 'minecraft' ? 'minecraft-logo' : 'saas-logo'}
+                initial={{ rotateY: 90, opacity: 0 }}
+                animate={{ rotateY: 0, opacity: 1 }}
+                exit={{ rotateY: -90, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className={`w-16 h-16 flex items-center justify-center mb-6 shadow-2xl border border-white/10 
+                  ${view === 'minecraft' ? 'bg-green-600 rounded-none shadow-green-500/30' : 'bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl shadow-indigo-500/30'}`}
+              >
+                {view === 'minecraft' ? <Gamepad2 className="w-9 h-9 text-white" /> : <ShieldCheck className="w-9 h-9 text-white" />}
+              </motion.div>
+            </AnimatePresence>
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+              {view === 'minecraft' ? 'MINECRAFT LAUNCHER' : 'Welcome back'}
             </h1>
-            <p className="text-slate-400 mt-2 font-medium text-center">
-              {view === 'method' ? "Chọn phương thức để tiếp tục" : "Nhập thông tin tài khoản của bạn"}
+            <p className="text-slate-400 mt-2 font-medium">
+              {view === 'minecraft' ? 'Ready to explore the blocks?' : 'Choose your access method'}
             </p>
           </div>
 
           <AnimatePresence mode="wait">
-            {view === 'method' ? (
-
+            {view === 'method' && (
               <motion.div
                 key="method"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 className="space-y-4"
               >
-                {/* Method Buttons */}
-                <button
+                <ProviderCard 
+                  icon={<User className="w-6 h-6" />}
+                  title="Tài khoản hệ thống"
+                  subtitle="Internal secure login"
                   onClick={() => setView('credentials')}
-                  className="w-full group relative flex items-center justify-between bg-indigo-600 hover:bg-indigo-500 text-white p-4 rounded-2xl transition-all duration-300 shadow-lg shadow-indigo-600/20 overflow-hidden"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <span className="font-semibold text-lg">Tài khoản hệ thống</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </button>
-
-                <button
+                />
+                <ProviderCard 
+                  icon={<Chrome className="w-6 h-6" />}
+                  title="Google"
+                  subtitle="Fast and trusted sign in"
                   onClick={() => googleLogin()}
-                  disabled={isGoogleLoading}
-                  className="w-full group flex items-center justify-between bg-white hover:bg-slate-50 text-slate-900 p-4 rounded-2xl transition-all duration-300 border border-white/10 shadow-sm"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {isGoogleLoading ? (
-                        <div className="w-5 h-5 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin" />
-                      ) : (
-                        <Chrome className="w-5 h-5 text-indigo-600" />
-                      )}
-                    </div>
-                    <span className="font-semibold text-lg">Tiếp tục với Google</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </button>
-
-                <button
-                  onClick={handleGithubLogin}
-                  disabled={isGithubLoading}
-                  className="w-full group flex items-center justify-between bg-slate-800 hover:bg-slate-700 text-white p-4 rounded-2xl transition-all duration-300 border border-white/5"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {isGithubLoading ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Github className="w-5 h-5" />
-                      )}
-                    </div>
-                    <span className="font-semibold text-lg">Tiếp tục với GitHub</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </button>
-
-                {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
-                  >
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    {error}
-                  </motion.div>
-                )}
+                  isLoading={isLoading.google}
+                />
+                <ProviderCard 
+                  icon={<Github className="w-6 h-6" />}
+                  title="GitHub"
+                  subtitle="Developer access portal"
+                  onClick={() => setLoading('github', true)}
+                  isLoading={isLoading.github}
+                />
+                <ProviderCard 
+                  icon={<Box className="w-6 h-6" />}
+                  title="Minecraft"
+                  subtitle="TLauncher & Legacy Vibe"
+                  onClick={() => setView('minecraft')}
+                  variant="minecraft"
+                />
+                <ProviderCard 
+                  icon={<Play className="w-6 h-6" />}
+                  title="Guest Demo"
+                  subtitle="Explore without account"
+                  onClick={() => navigate('/')}
+                  variant="guest"
+                />
               </motion.div>
-            ) : (
+            )}
+
+            {view === 'credentials' && (
               <motion.div
                 key="credentials"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="space-y-5"
               >
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-400 ml-1">Tên đăng nhập hoặc Email</label>
-                    <div className="relative group">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                      <input
-                        type="text"
-                        required
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full bg-slate-800/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all placeholder:text-slate-600"
-                        placeholder="vinhAn.dev"
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-400 ml-1">Username</label>
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full bg-slate-800/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                      placeholder="vinhAn.dev"
+                    />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-400 ml-1">Mật khẩu</label>
-                    <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-slate-800/50 border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all placeholder:text-slate-600"
-                        placeholder="••••••••"
-                      />
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-400 ml-1">Password</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-slate-800/50 border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-3">
+                  <button
+                    onClick={handleSubmit}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2"
+                  >
+                    {isLoading.system ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Sign in'}
+                  </button>
+                  <button
+                    onClick={() => setView('method')}
+                    className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-white font-semibold py-3 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to methods
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {view === 'minecraft' && (
+              <motion.div
+                key="minecraft"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="space-y-8"
+              >
+                <div className="bg-slate-900/80 border-4 border-slate-700 p-8 rounded-none relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  
+                  <div className="relative z-10 space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-green-500 flex items-center gap-2">
+                          <User className="w-3 h-3" /> Player Name
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="STEVE_1749"
+                          className="w-full bg-black border-2 border-slate-700 p-4 font-mono text-green-400 focus:border-green-500 outline-none transition-all placeholder:opacity-20"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase tracking-widest text-green-500 flex items-center gap-2">
+                          <Cpu className="w-3 h-3" /> Version Selector
+                        </label>
+                        <div className="w-full bg-black border-2 border-slate-700 p-4 font-mono text-green-400 flex justify-between items-center cursor-pointer hover:border-green-500/50 transition-all">
+                          <span>Release 1.21.1</span>
+                          <Layers className="w-4 h-4 opacity-50" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                       <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                        className="bg-green-600 hover:bg-green-500 text-white font-mono uppercase tracking-widest py-4 border-b-4 border-green-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg shadow-green-900/40 flex items-center justify-center gap-3"
                       >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        <Play className="w-5 h-5 fill-white" />
+                        Enter Game
+                      </button>
+                      <button
+                        onClick={() => setView('method')}
+                        className="bg-slate-800 hover:bg-slate-700 text-white font-mono uppercase tracking-widest py-4 border-b-4 border-slate-900 active:border-b-0 active:translate-y-1 transition-all"
+                      >
+                        Cancel
                       </button>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center justify-between px-1">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div className="relative flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          className="peer sr-only"
-                        />
-                        <div className="w-5 h-5 border-2 border-slate-700 rounded-md peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all" />
-                        <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 left-1 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
-                          <path d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium text-slate-400 group-hover:text-slate-300 transition-colors">Ghi nhớ đăng nhập</span>
-                    </label>
-                    <Link to="/forgot-password" title="Quên mật khẩu" className="text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-                      Quên mật khẩu?
-                    </Link>
+                <div className="flex justify-between items-center px-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 animate-ping rounded-full" />
+                    <span className="text-[10px] font-mono text-green-500/70 uppercase tracking-widest">Server Online: 2,451 players</span>
                   </div>
-
-                  {error && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
-                    >
-                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                      {error}
-                    </motion.div>
-                  )}
-
-                  <div className="pt-2 space-y-3">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
-                    >
-                      {isSubmitting ? (
-                        <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          Đăng nhập ngay
-                          <ArrowRight className="w-5 h-5" />
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setView('method')}
-                      className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-white font-semibold py-3 transition-colors"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      Quay lại tùy chọn
-                    </button>
-                  </div>
-                </form>
+                  <span className="text-[10px] font-mono text-slate-600 uppercase">Build: 2026.04.27</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Footer Links */}
-        <div className="mt-8 text-center space-y-4">
-          <p className="text-slate-500 font-medium">
-            Chưa có tài khoản?{' '}
-            <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors ml-1">
-              Đăng ký ngay
-            </Link>
-          </p>
-          {view === 'method' && (
-            <Link to="/forgot-password" title="Quên mật khẩu" className="block text-sm font-semibold text-slate-500 hover:text-slate-400 transition-colors">
-              Quên mật khẩu?
-            </Link>
-          )}
+        {/* Footer */}
+        <div className="mt-8 flex justify-center gap-6">
+          <Link to="/register" className="text-sm font-semibold text-slate-500 hover:text-white transition-colors">Register</Link>
+          <Link to="/help" className="text-sm font-semibold text-slate-500 hover:text-white transition-colors">Support</Link>
+          <Link to="/news" className="text-sm font-semibold text-slate-500 hover:text-white transition-colors">News</Link>
         </div>
       </motion.div>
     </div>
