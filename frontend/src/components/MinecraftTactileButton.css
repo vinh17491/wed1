@@ -1,0 +1,46 @@
+.mc-tactile-btn {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Noto Sans', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  transition: transform 0.1s ease;
+}
+
+.mc-tactile-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border: 3px solid #000;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.mc-tactile-btn--green .mc-tactile-btn-inner {
+  background-color: var(--mc-green);
+  color: white;
+}
+
+.mc-tactile-btn--green:hover .mc-tactile-btn-inner {
+  background-color: var(--mc-green-hover);
+}
+
+.mc-tactile-btn--gray .mc-tactile-btn-inner {
+  background-color: var(--mc-btn-gray);
+  color: #333;
+}
+
+.mc-tactile-btn--gray:hover .mc-tactile-btn-inner {
+  background-color: var(--mc-btn-gray-hover);
+}
+
+.mc-btn-icon {
+  display: flex;
+  align-items: center;
+}

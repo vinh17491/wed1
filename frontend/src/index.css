@@ -1,8 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+@import url('https://fonts.cdnfonts.com/css/minecraft-4');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
 @import "tailwindcss";
 
-
 :root {
+  /* Official Minecraft Colors */
+  --mc-green: #3c8527;
+  --mc-green-hover: #47a02e;
+  --mc-dark: #1c1b1a;
+  --mc-header-bg: #d3d1cf;
+  --mc-body-bg: #e6e4e2;
+  --mc-text: #333333;
+  --mc-border: #333333;
+  --mc-btn-gray: #d3d1cf;
+  --mc-btn-gray-hover: #e0dedc;
+
   /* Ultra-Premium Dark Palette (HSL) */
   --bg-primary: hsl(240, 10%, 4%);
   --bg-secondary: hsl(240, 10%, 7%);

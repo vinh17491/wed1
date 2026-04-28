@@ -1,0 +1,94 @@
+.mc-navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 60px;
+  background-color: var(--mc-dark);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.mc-navbar-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mc-navbar-left, .mc-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.mc-logo {
+  cursor: pointer;
+}
+
+.mc-nav-links {
+  display: flex;
+  list-style: none;
+  gap: 24px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mc-nav-links li {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.mc-nav-links li:hover {
+  opacity: 0.8;
+}
+
+.mc-buy-btn {
+  background-color: var(--mc-green);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mc-buy-btn:hover {
+  background-color: var(--mc-green-hover);
+}
+
+.mc-icon-actions {
+  display: flex;
+  gap: 12px;
+  color: white;
+}
+
+.mc-icon-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.mc-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mc-mobile-menu {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
