@@ -15,12 +15,10 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
   const [isFinished, setIsFinished] = useState(false);
 
   const sadCats = [
-    "https://media1.tenor.com/images/9413ffc5a11722a3cc456a88810750bd/tenor.gif?itemid=14193216",
-    "https://emoji.gg/assets/emoji/5228_cat_cri.gif",
-    "https://media1.tenor.com/images/a0554662ae7c3c60c0a7fdadac74ef18/tenor.gif?itemid=13931206",
-    "https://media3.giphy.com/media/qpCvOBBmBkble/giphy.gif",
-    "https://c.tenor.com/fpIAhF2jIY0AAAAC/cat-crying.gif",
-    "https://c.tenor.com/BP70qe8X0J8AAAAC/crycat-crying-cat.gif"
+    "https://github.com/NikhilMarko03/resources/blob/main/sad1.gif?raw=true",
+    "https://media.tenor.com/9413ffc5a11722a3cc456a88810750bd/tenor.gif",
+    "https://media.tenor.com/BP70qe8X0J8AAAAC/crycat-crying-cat.gif",
+    "https://media.tenor.com/a0554662ae7c3c60c0a7fdadac74ef18/tenor.gif"
   ];
 
   const noPhrases = [
@@ -32,7 +30,7 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
     "Bấm CÓ ngay đi thôiii"
   ];
 
-  const [currentCat, setCurrentCat] = useState<string | null>(null);
+  const [currentCat, setCurrentCat] = useState<string | null>("https://github.com/NikhilMarko03/resources/blob/main/happy1.gif?raw=true");
 
   const handleNoClick = () => {
     triggerHaptic();
@@ -65,6 +63,7 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
   const handleYesClick = (e: React.MouseEvent) => {
     triggerHaptic();
     setIsFinished(true);
+    setCurrentCat("https://github.com/NikhilMarko03/resources/blob/main/happy3.gif?raw=true");
 
     const newHearts = Array.from({ length: 15 }).map((_, i) => ({
       id: Date.now() + i,
