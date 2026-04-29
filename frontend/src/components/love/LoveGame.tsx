@@ -11,6 +11,7 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
   const [noCount, setNoCount] = useState(0);
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
   const [burstHearts, setBurstHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [floatingMemes, setFloatingMemes] = useState<{ id: number; x: number; y: number; src: string }[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
   const sadCats = [
@@ -37,11 +38,20 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
     triggerHaptic();
     const nextNoCount = noCount + 1;
     setNoCount(nextNoCount);
-    setYesScale((prev) => prev + 0.2); // Grow YES button even larger
+    setYesScale((prev) => prev + 0.2); 
 
     // Choose a random cat meme
     const randomCat = sadCats[Math.floor(Math.random() * sadCats.length)];
     setCurrentCat(randomCat);
+
+    // Spawn floating memes everywhere
+    const newMemes = Array.from({ length: 8 }).map((_, i) => ({
+      id: Date.now() + i,
+      x: Math.random() * (window.innerWidth - 100),
+      y: Math.random() * (window.innerHeight - 100),
+      src: sadCats[Math.floor(Math.random() * sadCats.length)]
+    }));
+    setFloatingMemes(newMemes);
 
     // Dodging movement bounds
     const containerWidth = Math.min(window.innerWidth * 0.6, 300);
@@ -89,6 +99,23 @@ export const LoveGame: React.FC<LoveGameProps> = ({ onSuccess }) => {
           >
             💖
           </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {/* Floating Meme Cats */}
+      <AnimatePresence>
+        {floatingMemes.map((meme) => (
+          <motion.img
+            key={meme.id}
+            src={meme.src}
+            alt="Floating Cat"
+            className="fixed w-32 h-32 object-cover pointer-events-none z-10 rounded-2xl shadow-lg border border-pink-300/30"
+            style={{ left: meme.x, top: meme.y }}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 0.8, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          />
         ))}
       </AnimatePresence>
 
