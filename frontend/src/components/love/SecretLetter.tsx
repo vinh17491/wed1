@@ -110,6 +110,13 @@ export const SecretLetter: React.FC<SecretLetterProps> = ({ onNext }) => {
             {isHolding && (
               <p className="text-xs text-pink-300 mt-6 animate-pulse">Đang giải mã... Giữ chặt nhé!</p>
             )}
+
+            <button
+              onClick={() => setIsUnlocked(true)}
+              className="mt-8 text-gray-500 hover:text-pink-300 text-xs underline underline-offset-4 focus:outline-none opacity-60 hover:opacity-100 transition-opacity"
+            >
+              Bỏ qua (Dành cho Tester)
+            </button>
           </motion.div>
         ) : (
           <motion.div
