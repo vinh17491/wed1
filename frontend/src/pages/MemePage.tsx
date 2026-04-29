@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './MemePage.css';
@@ -33,6 +34,7 @@ const memes = [
 
 export default function MemePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div className="meme-page noise-bg">
@@ -69,7 +71,28 @@ export default function MemePage() {
               </div>
             </motion.div>
           ))}
+
+          {/* Special Card #5 for Love Journey */}
+          <motion.div
+            className="meme-card glass border-pink-300/50 hover:border-pink-400 cursor-pointer relative group overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            whileHover={{ y: -10, transition: { duration: 0.2 } }}
+            onClick={() => navigate('/love-journey')}
+          >
+            <div className="meme-card__image-wrapper bg-pink-100/20 flex items-center justify-center h-48">
+              <span className="text-6xl group-hover:scale-110 transition-transform duration-300 select-none">🎁</span>
+            </div>
+            <div className="meme-card__content">
+              <h3 className="meme-card__title text-pink-400 font-semibold">Dành riêng cho Nhi mipmap ✨</h3>
+              <p className="meme-card__desc text-gray-300">Một điều bất ngờ nhỏ nhắn...</p>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          </motion.div>
         </div>
+
 
         <motion.div 
           className="meme-intro glass"

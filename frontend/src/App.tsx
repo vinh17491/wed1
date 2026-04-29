@@ -14,6 +14,7 @@ import ActivityLogs from './pages/admin/ActivityLogs';
 import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
 import Feedback from './pages/Feedback';
 import FeedbackManager from './pages/admin/FeedbackManager';
+import LoveJourneyPage from './pages/LoveJourneyPage';
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useAuth();
@@ -29,9 +30,11 @@ export default function App() {
           <Routes>
             <Route path="/" element={<PublicPage />} />
             <Route path="/memes" element={<MemePage />} />
+            <Route path="/love-journey" element={<LoveJourneyPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/feedback" element={<Feedback />} />
+
             
             {/* Admin Routes */}
             <Route path="/admin" element={
