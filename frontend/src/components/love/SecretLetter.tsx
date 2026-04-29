@@ -94,11 +94,9 @@ export const SecretLetter: React.FC<SecretLetterProps> = ({ onNext }) => {
               </svg>
 
               <button
-                onTouchStart={startHold}
-                onTouchEnd={stopHold}
-                onMouseDown={startHold}
-                onMouseUp={stopHold}
-                onMouseLeave={stopHold}
+                onPointerDown={startHold}
+                onPointerUp={stopHold}
+                onPointerLeave={stopHold}
                 className={`w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-400 to-pink-500 shadow-lg shadow-pink-500/30 focus:outline-none select-none active:scale-95 transition-transform duration-150 ${
                   isHolding ? 'brightness-110' : ''
                 }`}
