@@ -16,18 +16,21 @@ export const SecretLetter: React.FC<SecretLetterProps> = ({ onNext }) => {
   const startHold = () => {
     setIsHolding(true);
     setProgress(0);
+    const startTime = Date.now();
+    const duration = 5000; // 5 seconds
 
     holdIntervalRef.current = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(holdIntervalRef.current!);
-          triggerHaptic();
-          setIsUnlocked(true);
-          return 100;
-        }
-        return prev + 2; // 50 steps * 100ms = 5000ms (5s)
-      });
-    }, 100);
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min((elapsed / duration) * 100, 100);
+      setProgress(pct);
+
+      if (pct >= 100) {
+        clearInterval(holdIntervalRef.current);
+        setIsHolding(false);
+        setIsUnlocked(true);
+        triggerHaptic();
+      }
+    }, 30);
   };
 
   const stopHold = () => {
@@ -35,7 +38,6 @@ export const SecretLetter: React.FC<SecretLetterProps> = ({ onNext }) => {
     if (holdIntervalRef.current) {
       clearInterval(holdIntervalRef.current);
     }
-    // Reset if not unlocked
     if (!isUnlocked) {
       setProgress(0);
     }
