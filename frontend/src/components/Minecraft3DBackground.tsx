@@ -231,7 +231,7 @@ const CameraController = () => {
 const MinecraftScene = () => {
   return (
     <>
-      <Sky sunPosition={[100, 50, -50]} turbidity={0.3} rayleigh={1.2} elevation={0.2} />
+      <Sky sunPosition={[100, 50, -50]} turbidity={0.3} rayleigh={1.2} />
       
       <ambientLight intensity={1.5} color="#ffffff" />
       <directionalLight 
