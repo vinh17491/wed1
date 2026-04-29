@@ -25,7 +25,7 @@ export const BloomScene: React.FC<BloomSceneProps> = ({ onNext }) => {
           transition={{ duration: 1 }}
           className="text-2xl md:text-3xl font-light text-pink-200 drop-shadow-[0_0_10px_rgba(244,114,182,0.3)]"
         >
-          A little floral surprise for you, Nhi mipmap 🌸
+          Món quà hoa rực rỡ dành riêng cho Nhi mipmap 🌸
         </motion.h2>
       </div>
 
