@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 
 import MinecraftNavbar from '../components/MinecraftNavbar';
-import Minecraft3DBackground from '../components/Minecraft3DBackground';
+import MinecraftVideoBackground from '../components/MinecraftVideoBackground';
 import MinecraftRegisterForm from '../components/MinecraftRegisterForm';
 
 const Register: React.FC = () => {
@@ -30,8 +30,8 @@ const Register: React.FC = () => {
       {/* Official Top Navbar */}
       <MinecraftNavbar />
 
-      {/* Cinematic 3D Background */}
-      <Minecraft3DBackground />
+      {/* Cinematic Video Background */}
+      <MinecraftVideoBackground />
 
       {/* Main Content Area */}
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">

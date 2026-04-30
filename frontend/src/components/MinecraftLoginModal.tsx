@@ -4,7 +4,7 @@ import { X, Diamond, Pickaxe, Sword, Box, Users, ShieldCheck, Gamepad2 } from 'l
 
 import './MinecraftLoginModal.css';
 import steveImg from '../assets/minecraft-steve.png';
-import Minecraft3DBackground from './Minecraft3DBackground';
+import MinecraftVideoBackground from './MinecraftVideoBackground';
 
 
 interface MinecraftLoginModalProps {
@@ -45,8 +45,8 @@ const MinecraftLoginModal: React.FC<MinecraftLoginModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="minecraft-modal-backdrop">
-          {/* Live 3D Animated Background */}
-          <Minecraft3DBackground />
+          {/* Live Video Background */}
+          <MinecraftVideoBackground />
 
           {/* Click to close overlay */}
           <div className="absolute inset-0 z-0" onClick={onClose} />
