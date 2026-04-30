@@ -97,7 +97,7 @@ const Cow = ({ position, speed = 0.3, direction = 1 }: { position: [number, numb
 const Minecraft3DAnimals: React.FC = () => {
   return (
     <div className="absolute inset-0 z-10 pointer-events-none">
-      <Canvas alpha shadows dpr={[1, 1.5]}>
+      <Canvas shadows dpr={[1, 1.5]} gl={{ alpha: true }}>
         <PerspectiveCamera makeDefault position={[0, 4, 15]} fov={40} />
         
         <ambientLight intensity={1.2} />
