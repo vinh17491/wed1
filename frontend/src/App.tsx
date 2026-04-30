@@ -69,11 +69,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
-  );
-}
