@@ -38,7 +38,7 @@ class ErrorBoundary extends Component<Props, State> {
             >
               Tải lại trang
             </button>
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <pre className="mt-6 p-4 bg-black/50 rounded-lg text-left text-xs text-red-300 overflow-auto max-h-40">
                 {this.state.error?.toString()}
               </pre>
@@ -48,7 +48,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.children;
+    return this.props.children;
   }
 }
 
