@@ -3,9 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Diamond, Pickaxe, Sword, Box, Users, ShieldCheck, Gamepad2 } from 'lucide-react';
 
 import './MinecraftLoginModal.css';
-import steveImg from '../assets/minecraft-steve.png';
-import pigImg from '../assets/minecraft-pig.png';
-import cowImg from '../assets/minecraft-cow.png';
 import MinecraftVideoBackground from './MinecraftVideoBackground';
 
 
@@ -123,38 +120,7 @@ const MinecraftLoginModal: React.FC<MinecraftLoginModalProps> = ({
                   ))}
                 </ul>
 
-                {/* Animated Animals */}
-                <div className="minecraft-animals-container">
-                  <motion.img
-                    animate={{ 
-                      x: [0, 100, 0],
-                      scaleX: [1, 1, -1, -1, 1]
-                    }}
-                    transition={{ 
-                      duration: 10, 
-                      repeat: Infinity,
-                      times: [0, 0.45, 0.5, 0.95, 1]
-                    }}
-                    src={pigImg}
-                    alt="Pig"
-                    className="mc-animal mc-pig"
-                  />
-                  <motion.img
-                    animate={{ 
-                      x: [0, -120, 0],
-                      scaleX: [-1, -1, 1, 1, -1]
-                    }}
-                    transition={{ 
-                      duration: 12, 
-                      repeat: Infinity,
-                      delay: 2,
-                      times: [0, 0.45, 0.5, 0.95, 1]
-                    }}
-                    src={cowImg}
-                    alt="Cow"
-                    className="mc-animal mc-cow"
-                  />
-                </div>
+                {/* Removed 2D Animals */}
               </div>
             </div>
           </motion.div>

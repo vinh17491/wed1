@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { Diamond, Pickaxe, Box, Users, ShieldCheck, Gamepad2, ArrowLeft } from 'lucide-react';
 import MinecraftTactileButton from './MinecraftTactileButton';
 import './MinecraftOfficialPanel.css';
-import pigImg from '../assets/minecraft-pig.png';
-import cowImg from '../assets/minecraft-cow.png';
 
 interface MinecraftOfficialPanelProps {
   onLogin: () => void;
@@ -75,37 +73,7 @@ const MinecraftOfficialPanel: React.FC<MinecraftOfficialPanelProps> = ({
                 ))}
               </ul>
 
-              <div className="mc-animals-showcase">
-                <motion.img 
-                  animate={{ 
-                    x: [0, 80, 0],
-                    scaleX: [1, 1, -1, -1, 1]
-                  }}
-                  transition={{ 
-                    duration: 8, 
-                    repeat: Infinity,
-                    times: [0, 0.45, 0.5, 0.95, 1]
-                  }}
-                  src={pigImg} 
-                  alt="Pig" 
-                  className="mc-showcase-animal mc-showcase-pig" 
-                />
-                <motion.img 
-                  animate={{ 
-                    x: [0, -60, 0],
-                    scaleX: [-1, -1, 1, 1, -1]
-                  }}
-                  transition={{ 
-                    duration: 10, 
-                    repeat: Infinity,
-                    delay: 1,
-                    times: [0, 0.45, 0.5, 0.95, 1]
-                  }}
-                  src={cowImg} 
-                  alt="Cow" 
-                  className="mc-showcase-animal mc-showcase-cow" 
-                />
-              </div>
+              {/* Removed 2D Animals */}
           </div>
         </div>
       </div>
