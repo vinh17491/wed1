@@ -4,6 +4,8 @@ import { X, Diamond, Pickaxe, Sword, Box, Users, ShieldCheck, Gamepad2 } from 'l
 
 import './MinecraftLoginModal.css';
 import steveImg from '../assets/minecraft-steve.png';
+import pigImg from '../assets/minecraft-pig.png';
+import cowImg from '../assets/minecraft-cow.png';
 import MinecraftVideoBackground from './MinecraftVideoBackground';
 
 
@@ -121,15 +123,38 @@ const MinecraftLoginModal: React.FC<MinecraftLoginModalProps> = ({
                   ))}
                 </ul>
 
-                {/* Steve Character */}
-                <motion.img
-                  initial={{ x: 50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                  src={steveImg}
-                  alt="Steve"
-                  className="minecraft-character"
-                />
+                {/* Animated Animals */}
+                <div className="minecraft-animals-container">
+                  <motion.img
+                    animate={{ 
+                      x: [0, 100, 0],
+                      scaleX: [1, 1, -1, -1, 1]
+                    }}
+                    transition={{ 
+                      duration: 10, 
+                      repeat: Infinity,
+                      times: [0, 0.45, 0.5, 0.95, 1]
+                    }}
+                    src={pigImg}
+                    alt="Pig"
+                    className="mc-animal mc-pig"
+                  />
+                  <motion.img
+                    animate={{ 
+                      x: [0, -120, 0],
+                      scaleX: [-1, -1, 1, 1, -1]
+                    }}
+                    transition={{ 
+                      duration: 12, 
+                      repeat: Infinity,
+                      delay: 2,
+                      times: [0, 0.45, 0.5, 0.95, 1]
+                    }}
+                    src={cowImg}
+                    alt="Cow"
+                    className="mc-animal mc-cow"
+                  />
+                </div>
               </div>
             </div>
           </motion.div>

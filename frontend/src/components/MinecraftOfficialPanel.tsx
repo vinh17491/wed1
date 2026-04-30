@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Diamond, Pickaxe, Box, Users, ShieldCheck, Gamepad2, ArrowLeft } from 'lucide-react';
 import MinecraftTactileButton from './MinecraftTactileButton';
 import './MinecraftOfficialPanel.css';
-import steveImg from '../assets/minecraft-steve.png';
+import pigImg from '../assets/minecraft-pig.png';
+import cowImg from '../assets/minecraft-cow.png';
 
 interface MinecraftOfficialPanelProps {
   onLogin: () => void;
@@ -62,7 +63,7 @@ const MinecraftOfficialPanel: React.FC<MinecraftOfficialPanelProps> = ({
         <div className="mc-panel-right">
             <div className="mc-showcase-content">
               <h3 className="mc-font mc-showcase-title">
-                CÙNG STEVE BƯỚC VÀO THẾ GIỚI KHỐI VUÔNG NÀO!
+                KHÁM PHÁ THẾ GIỚI CÙNG NHỮNG NGƯỜI BẠN!
               </h3>
               
               <ul className="mc-feature-list">
@@ -74,16 +75,37 @@ const MinecraftOfficialPanel: React.FC<MinecraftOfficialPanelProps> = ({
                 ))}
               </ul>
 
-              <div className="mc-steve-container">
-              <motion.img 
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                src={steveImg} 
-                alt="Steve" 
-                className="mc-steve-img" 
-              />
-            </div>
+              <div className="mc-animals-showcase">
+                <motion.img 
+                  animate={{ 
+                    x: [0, 80, 0],
+                    scaleX: [1, 1, -1, -1, 1]
+                  }}
+                  transition={{ 
+                    duration: 8, 
+                    repeat: Infinity,
+                    times: [0, 0.45, 0.5, 0.95, 1]
+                  }}
+                  src={pigImg} 
+                  alt="Pig" 
+                  className="mc-showcase-animal mc-showcase-pig" 
+                />
+                <motion.img 
+                  animate={{ 
+                    x: [0, -60, 0],
+                    scaleX: [-1, -1, 1, 1, -1]
+                  }}
+                  transition={{ 
+                    duration: 10, 
+                    repeat: Infinity,
+                    delay: 1,
+                    times: [0, 0.45, 0.5, 0.95, 1]
+                  }}
+                  src={cowImg} 
+                  alt="Cow" 
+                  className="mc-showcase-animal mc-showcase-cow" 
+                />
+              </div>
           </div>
         </div>
       </div>
