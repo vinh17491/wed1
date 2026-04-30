@@ -6,7 +6,7 @@ interface TransitionLayerProps {
   type?: 'fade' | 'hearts' | 'glow';
 }
 
-export const TransitionLayer: React.FC<TransitionLayerProps> = ({ visible, type = 'fade' }) => {
+export const TransitionLayer: React.FC<TransitionLayerProps> = React.memo(({ visible, type = 'fade' }) => {
   return (
     <AnimatePresence>
       {visible && (

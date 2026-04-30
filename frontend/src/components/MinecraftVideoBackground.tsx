@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MinecraftVideoBackground: React.FC = () => {
+const MinecraftVideoBackground: React.FC = React.memo(() => {
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-slate-900">
       {/* Video Background */}

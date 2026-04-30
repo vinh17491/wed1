@@ -10,7 +10,7 @@ interface Heart {
   color: string;
 }
 
-export const FloatingHearts: React.FC = () => {
+export const FloatingHearts: React.FC = React.memo(() => {
   const [hearts, setHearts] = useState<Heart[]>([]);
 
   useEffect(() => {
@@ -72,4 +72,6 @@ export const FloatingHearts: React.FC = () => {
       </AnimatePresence>
     </div>
   );
-};
+});
+
+export default FloatingHearts;

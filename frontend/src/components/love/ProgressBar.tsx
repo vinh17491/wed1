@@ -6,7 +6,7 @@ interface ProgressBarProps {
   totalSteps: number;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, totalSteps }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = React.memo(({ currentStep, totalSteps }) => {
   const progress = (currentStep / (totalSteps - 1)) * 100;
 
   if (currentStep === 0) return null; // Hide on Loader

@@ -19,11 +19,11 @@ export default function CustomCursor() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('a, button, .card, .btn, .clickable')) {
-        setIsHovered(true);
-      } else {
-        setIsHovered(false);
-      }
+      const shouldHover = !!target.closest('a, button, .card, .btn, .clickable');
+      setIsHovered(prev => {
+        if (prev !== shouldHover) return shouldHover;
+        return prev;
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });

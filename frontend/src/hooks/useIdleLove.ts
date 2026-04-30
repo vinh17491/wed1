@@ -9,7 +9,7 @@ export const useIdleLove = (idleTimeLimit = 20000) => {
     let timeoutId: any;
 
     const resetIdle = () => {
-      setIsIdle(false);
+      setIsIdle(prev => prev ? false : prev); 
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         setIsIdle(true);

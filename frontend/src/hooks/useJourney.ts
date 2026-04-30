@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useJourney = (initialStep = 0) => {
   const [currentStep, setCurrentStep] = useState(() => {
@@ -10,12 +10,12 @@ export const useJourney = (initialStep = 0) => {
     localStorage.setItem('loveJourneyStep', currentStep.toString());
   }, [currentStep]);
 
-  const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => Math.max(0, prev - 1));
-  const reset = () => {
+  const nextStep = useCallback(() => setCurrentStep((prev) => prev + 1), []);
+  const prevStep = useCallback(() => setCurrentStep((prev) => Math.max(0, prev - 1)), []);
+  const reset = useCallback(() => {
     setCurrentStep(0);
     localStorage.setItem('loveJourneyStep', '0');
-  };
+  }, []);
 
   return { currentStep, nextStep, prevStep, reset, setCurrentStep };
 };
