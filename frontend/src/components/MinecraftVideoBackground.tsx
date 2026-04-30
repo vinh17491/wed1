@@ -19,6 +19,6 @@ const MinecraftVideoBackground: React.FC = React.memo(() => {
       <div className="absolute inset-0 z-10 bg-black/30 backdrop-blur-[1px] pointer-events-none" />
     </div>
   );
-};
+});
 
 export default MinecraftVideoBackground;

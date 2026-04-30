@@ -27,4 +27,4 @@ export const TransitionLayer: React.FC<TransitionLayerProps> = React.memo(({ vis
       )}
     </AnimatePresence>
   );
-};
+});

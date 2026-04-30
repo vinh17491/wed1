@@ -21,4 +21,4 @@ export const ProgressBar: React.FC<ProgressBarProps> = React.memo(({ currentStep
       />
     </div>
   );
-};
+});
