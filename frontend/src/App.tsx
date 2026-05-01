@@ -11,6 +11,7 @@ const LoveJourneyPage = lazy(() => import('./pages/LoveJourneyPage'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Feedback = lazy(() => import('./pages/Feedback'));
+const ShopHome = lazy(() => import('./pages/ShopHome'));
 
 // Admin pages
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/feedback" element={<Feedback />} />
+              <Route path="/shop" element={<ShopHome />} />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
