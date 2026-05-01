@@ -1,5 +1,6 @@
+import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Product } from '../../types/shop';
 import { FakeStarRating } from './FakeStarRating';
 import { useCartStore } from '../../store/useCartStore';
@@ -11,32 +12,42 @@ interface ProductCardProps {
   index: number;
 }
 
-export function ProductCard({ product, index }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, index }: ProductCardProps) {
   const { addToCart } = useCartStore();
   const { openProductModal } = useUIStore();
   const { addRecentlyViewed } = useExtraStore();
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleProductClick = () => {
     addRecentlyViewed(product);
     openProductModal(product);
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isAdding) return;
+    
+    setIsAdding(true);
+    
+    // Simulated network delay (600ms) for premium feel
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
     addToCart({
       id: crypto.randomUUID(),
       productId: product.id,
       product: product,
       quantity: 1
     });
+    
+    setIsAdding(false);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
       onClick={handleProductClick}
       className="group relative bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-all duration-300"
     >
@@ -60,18 +71,28 @@ export function ProductCard({ product, index }: ProductCardProps) {
         <FakeStarRating rating={product.rating} className="mb-4" />
         
         <div className="flex items-center justify-between mt-auto">
-          <div className="text-xl font-bold text-white">
+          <div className="text-xl font-bold text-emerald-400">
             ${product.price.toFixed(2)}
           </div>
-          <button
+          <motion.button
+            whileTap={{ scale: isAdding ? 1 : 0.9 }}
             onClick={handleAddToCart}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-emerald-500 hover:text-white transition-all group-hover:scale-110"
+            disabled={isAdding}
+            className={`p-2 rounded-xl transition-all flex items-center justify-center ${
+              isAdding 
+                ? 'bg-emerald-500/50 text-emerald-200 cursor-not-allowed' 
+                : 'bg-slate-800 text-slate-300 hover:bg-emerald-500 hover:text-white group-hover:scale-110'
+            }`}
             aria-label="Add to cart"
           >
-            <ShoppingCart className="w-5 h-5" />
-          </button>
+            {isAdding ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ShoppingCart className="w-5 h-5" />
+            )}
+          </motion.button>
         </div>
       </div>
     </motion.div>
   );
-}
+});

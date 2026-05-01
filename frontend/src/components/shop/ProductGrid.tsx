@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { useProductStore } from '../../store/useProductStore';
 import { useExtraStore } from '../../store/useExtraStore';
 import { ProductCard } from './ProductCard';
 import { Product } from '../../types/shop';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export function ProductGrid() {
   const { products } = useProductStore();
@@ -32,7 +43,7 @@ export function ProductGrid() {
   useEffect(() => {
     const currentItems = filteredProducts.slice(0, page * itemsPerPage);
     setDisplayedProducts(currentItems);
-  }, [page, filteredProducts]); // Keep filteredProducts dependency to update when search typing
+  }, [page, filteredProducts]);
 
   // Intersection Observer for infinite scroll
   const handleObserver = useCallback(
@@ -67,11 +78,16 @@ export function ProductGrid() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
             {displayedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index % itemsPerPage} />
+              <ProductCard key={product.id} product={product} index={index} />
             ))}
-          </div>
+          </motion.div>
           
           {/* Intersection Observer Target */}
           {displayedProducts.length < filteredProducts.length && (

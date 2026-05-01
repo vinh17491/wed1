@@ -10,11 +10,13 @@ interface ExtraState {
     category: string;
     priceRange: [number, number];
   };
+  orderNote: string;
   addRecentlyViewed: (product: Product) => void;
   applyCoupon: (coupon: Coupon) => void;
   removeCoupon: () => void;
   setFilters: (filters: Partial<ExtraState['filters']>) => void;
   resetFilters: () => void;
+  setOrderNote: (note: string) => void;
 }
 
 const defaultFilters = { search: '', category: 'All', priceRange: [0, 500] as [number, number] };
@@ -25,6 +27,7 @@ export const useExtraStore = create<ExtraState>()(
       recentlyViewed: [],
       coupon: null,
       filters: defaultFilters,
+      orderNote: '',
       addRecentlyViewed: (product) => set((state) => {
         const filtered = state.recentlyViewed.filter(p => p.id !== product.id);
         return {
@@ -37,6 +40,7 @@ export const useExtraStore = create<ExtraState>()(
         filters: { ...state.filters, ...newFilters } 
       })),
       resetFilters: () => set({ filters: defaultFilters }),
+      setOrderNote: (note) => set({ orderNote: note }),
     }),
     {
       name: 'shop-extra-storage',

@@ -49,11 +49,22 @@ export default function ShopHome() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <ShopHero />
-        <SearchFilterPanel />
-        <ProductGrid />
-        <RecentlyViewed />
+      <main className="max-w-[1400px] mx-auto px-6 py-12 md:py-16">
+        <div className="mb-20">
+          <ShopHero />
+        </div>
+        
+        <div className="mb-16">
+          <SearchFilterPanel />
+        </div>
+        
+        <div className="mb-24">
+          <ProductGrid />
+        </div>
+        
+        <div className="mb-16">
+          <RecentlyViewed />
+        </div>
       </main>
 
       {/* Overlays */}

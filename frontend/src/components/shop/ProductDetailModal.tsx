@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, Check, ShieldCheck } from 'lucide-react';
+import { X, ShoppingCart, Check, ShieldCheck, Loader2 } from 'lucide-react';
 import { useUIStore } from '../../store/useUIStore';
 import { useCartStore } from '../../store/useCartStore';
 import { FakeStarRating } from './FakeStarRating';
@@ -8,22 +8,51 @@ import { FakeStarRating } from './FakeStarRating';
 export function ProductDetailModal() {
   const { selectedProduct, isProductModalOpen, closeProductModal } = useUIStore();
   const { addToCart } = useCartStore();
+  
   const [activeImage, setActiveImage] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
-  const [zoomStyle, setZoomStyle] = useState({ display: 'none', backgroundPosition: '0% 0%' });
+  const [zoomStyle, setZoomStyle] = useState({ display: 'none', backgroundPosition: '50% 50%' });
   const imageRef = useRef<HTMLImageElement>(null);
+
+  // Close on ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeProductModal();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeProductModal]);
+
+  // Reset states when modal opens/closes
+  useEffect(() => {
+    if (!isProductModalOpen) {
+      setTimeout(() => {
+        setActiveImage(0);
+        setIsAdded(false);
+        setIsAdding(false);
+      }, 300);
+    }
+  }, [isProductModalOpen]);
 
   if (!selectedProduct) return null;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (isAdding || isAdded) return;
+    
+    setIsAdding(true);
+    await new Promise(resolve => setTimeout(resolve, 600)); // Simulated delay
+    
     addToCart({
       id: crypto.randomUUID(),
       productId: selectedProduct.id,
       product: selectedProduct,
       quantity: 1
     });
+    
+    setIsAdding(false);
     setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
+    setTimeout(() => setIsAdded(false), 2500);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -31,6 +60,7 @@ export function ProductDetailModal() {
     const { left, top, width, height } = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
+    
     setZoomStyle({
       display: 'block',
       backgroundPosition: `${x}% ${y}%`,
@@ -38,38 +68,40 @@ export function ProductDetailModal() {
   };
 
   const handleMouseLeave = () => {
-    setZoomStyle({ display: 'none', backgroundPosition: '0% 0%' });
+    setZoomStyle({ display: 'none', backgroundPosition: '50% 50%' });
   };
 
   return (
     <AnimatePresence>
       {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             onClick={closeProductModal}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md"
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
           >
             <button
               onClick={closeProductModal}
-              className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-slate-800 text-white rounded-full backdrop-blur-md transition-colors"
+              className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-slate-800 text-white rounded-full backdrop-blur-md transition-colors shadow-lg"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Left: Image Gallery */}
-            <div className="w-full md:w-1/2 p-6 flex flex-col gap-4 bg-slate-950/50">
+            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col gap-6 bg-slate-950/50">
               <div 
-                className="relative aspect-square rounded-2xl overflow-hidden cursor-zoom-in group"
+                className="relative aspect-square rounded-2xl overflow-hidden cursor-zoom-in group border border-slate-800/50 bg-slate-900"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >
@@ -77,15 +109,15 @@ export function ProductDetailModal() {
                   ref={imageRef}
                   src={selectedProduct.gallery[activeImage] || selectedProduct.image}
                   alt={selectedProduct.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-opacity duration-300"
                 />
-                {/* Zoom Lens overlay */}
+                {/* Zoom Lens overlay (Desktop only) */}
                 <div 
-                  className="absolute inset-0 pointer-events-none hidden md:block"
+                  className="absolute inset-0 pointer-events-none hidden md:block transition-all duration-75"
                   style={{
                     ...zoomStyle,
                     backgroundImage: `url(${selectedProduct.gallery[activeImage] || selectedProduct.image})`,
-                    backgroundSize: '200%',
+                    backgroundSize: '150%', // Premium 1.5x zoom
                     backgroundRepeat: 'no-repeat',
                   }}
                 />
@@ -93,13 +125,15 @@ export function ProductDetailModal() {
               
               {/* Thumbnails */}
               {selectedProduct.gallery.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
                   {selectedProduct.gallery.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
-                      className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
-                        activeImage === idx ? 'border-emerald-500' : 'border-transparent opacity-60 hover:opacity-100'
+                      className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${
+                        activeImage === idx 
+                          ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' 
+                          : 'border-transparent opacity-60 hover:opacity-100 hover:border-slate-700'
                       }`}
                     >
                       <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
@@ -110,50 +144,61 @@ export function ProductDetailModal() {
             </div>
 
             {/* Right: Details */}
-            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col overflow-y-auto">
-              <div className="mb-2 text-emerald-400 font-medium text-sm tracking-wider uppercase">
+            <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto">
+              <div className="mb-3 text-emerald-400 font-bold text-sm tracking-widest uppercase">
                 {selectedProduct.category}
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6 leading-tight">
                 {selectedProduct.name}
               </h2>
               
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-800">
                 <FakeStarRating rating={selectedProduct.rating} />
-                <span className="text-slate-500 text-sm">|</span>
-                <div className="flex items-center gap-1 text-slate-300 text-sm">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" /> Guaranteed
+                <div className="w-px h-6 bg-slate-800" />
+                <div className="flex items-center gap-2 text-slate-300 font-medium">
+                  <ShieldCheck className="w-5 h-5 text-emerald-500" /> Guaranteed Premium
                 </div>
               </div>
 
-              <div className="text-3xl font-bold text-white mb-6">
+              <div className="text-4xl md:text-5xl font-black text-emerald-400 mb-8 drop-shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                 ${selectedProduct.price.toFixed(2)}
               </div>
 
-              <div className="prose prose-invert prose-emerald mb-8 text-slate-300">
+              <div className="prose prose-lg prose-invert prose-emerald mb-10 text-slate-300 leading-relaxed">
                 <p>{selectedProduct.description}</p>
               </div>
 
-              <div className="mt-auto pt-6 border-t border-slate-800">
-                <button
+              <div className="mt-auto pt-8">
+                <motion.button
+                  whileTap={{ scale: (isAdding || isAdded) ? 1 : 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={isAdded}
-                  className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                  disabled={isAdding || isAdded}
+                  className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
                     isAdded 
                       ? 'bg-emerald-600 text-white' 
-                      : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]'
+                      : isAdding
+                      ? 'bg-emerald-500/50 text-emerald-100 cursor-wait'
+                      : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]'
                   }`}
                 >
-                  {isAdded ? (
+                  {isAdding ? (
                     <>
-                      <Check className="w-5 h-5" /> Added to Cart
+                      <Loader2 className="w-6 h-6 animate-spin" /> Processing...
+                    </>
+                  ) : isAdded ? (
+                    <>
+                      <Check className="w-6 h-6" /> Added to Cart
                     </>
                   ) : (
                     <>
-                      <ShoppingCart className="w-5 h-5" /> Add to Cart
+                      <ShoppingCart className="w-6 h-6" /> Add to Cart
                     </>
                   )}
-                </button>
+                </motion.button>
+                <p className="text-center text-sm text-slate-500 mt-4">
+                  Instant digital delivery to your email
+                </p>
               </div>
             </div>
           </motion.div>
