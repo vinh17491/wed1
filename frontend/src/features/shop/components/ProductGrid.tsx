@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { useProductStore } from '../../../store/useProductStore';
 import { useExtraStore } from '../../../store/useExtraStore';
 import { ProductCard } from './ProductCard';
-import { Product } from '../../../types/shop';
+import { LoadingSpinner } from '../../../components/LoadingSpinner';
+import { ErrorMessage } from '../../../components/ErrorMessage';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -16,14 +17,19 @@ const containerVariants = {
 };
 
 export function ProductGrid() {
-  const { products } = useProductStore();
+  const { products, loading, error, fetchProducts } = useProductStore();
   const { filters } = useExtraStore();
   
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Apply filters
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [fetchProducts, products.length]);
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(filters.search.toLowerCase()) || 
@@ -35,17 +41,14 @@ export function ProductGrid() {
     });
   }, [products, filters]);
 
-  // Reset page when filters change
   useEffect(() => {
     setPage(1);
   }, [filters]);
 
-  // Update displayed products when page or filtered list changes
   const displayedProducts = useMemo(() => {
     return filteredProducts.slice(0, page * itemsPerPage);
   }, [page, filteredProducts]);
 
-  // Intersection Observer for infinite scroll
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
@@ -69,12 +72,20 @@ export function ProductGrid() {
     return () => observer.unobserve(element);
   }, [handleObserver]);
 
+  if (loading && products.length === 0) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={fetchProducts} />;
+  }
+
   return (
     <div className="w-full">
       {filteredProducts.length === 0 ? (
         <div className="py-20 text-center text-slate-400">
-          <p className="text-xl mb-2">No products found</p>
-          <p className="text-sm">Try adjusting your filters or search terms.</p>
+          <p className="text-xl mb-2">Không tìm thấy sản phẩm nào</p>
+          <p className="text-sm">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
         </div>
       ) : (
         <>
@@ -89,7 +100,6 @@ export function ProductGrid() {
             ))}
           </motion.div>
           
-          {/* Intersection Observer Target */}
           {displayedProducts.length < filteredProducts.length && (
             <div ref={observerTarget} className="py-10 flex justify-center">
               <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />

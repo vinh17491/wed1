@@ -1,4 +1,4 @@
-import { supabase } from './config';
+import { supabase } from './supabase';
 
 export interface Product {
   id: string;
@@ -10,61 +10,104 @@ export interface Product {
   created_at?: string;
 }
 
-export const shopService = {
-  async getProducts() {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+export const productService = {
+  /**
+   * Lấy danh sách tất cả sản phẩm
+   */
+  async getProducts(): Promise<Product[]> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw new Error(`Lỗi khi lấy sản phẩm: ${error.message}`);
+      return data || [];
+    } catch (error) {
+      console.error('productService.getProducts:', error);
+      throw error;
+    }
   },
 
-  async createProduct(product: Omit<Product, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
-      .from('products')
-      .insert([product])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
+  /**
+   * Tạo sản phẩm mới
+   */
+  async createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([product])
+        .select()
+        .single();
+
+      if (error) throw new Error(`Lỗi khi tạo sản phẩm: ${error.message}`);
+      return data;
+    } catch (error) {
+      console.error('productService.createProduct:', error);
+      throw error;
+    }
   },
 
-  async updateProduct(id: string, updates: Partial<Product>) {
-    const { data, error } = await supabase
-      .from('products')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
+  /**
+   * Cập nhật thông tin sản phẩm
+   */
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw new Error(`Lỗi khi cập nhật sản phẩm: ${error.message}`);
+      return data;
+    } catch (error) {
+      console.error('productService.updateProduct:', error);
+      throw error;
+    }
   },
 
-  async deleteProduct(id: string) {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
-    if (error) throw error;
-    return true;
+  /**
+   * Xóa sản phẩm
+   */
+  async deleteProduct(id: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw new Error(`Lỗi khi xóa sản phẩm: ${error.message}`);
+    } catch (error) {
+      console.error('productService.deleteProduct:', error);
+      throw error;
+    }
   },
 
-  async uploadImage(file: File) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+  /**
+   * Upload hình ảnh lên Supabase Storage
+   */
+  async uploadImage(file: File): Promise<string> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('products')
-      .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
 
-    if (uploadError) throw uploadError;
+      if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('products')
-      .getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
 
-    return publicUrl;
+      return publicUrl;
+    } catch (error) {
+      console.error('productService.uploadImage:', error);
+      throw new Error('Không thể upload ảnh, vui lòng thử lại.');
+    }
   }
 };

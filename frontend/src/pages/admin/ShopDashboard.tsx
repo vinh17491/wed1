@@ -1,54 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { productService as shopService, Product } from '../../services/productService';
 import { Package, Plus, Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import AddProductModal from '../../features/shop/components/AddProductModal';
 import EditProductModal from '../../features/shop/components/EditProductModal';
 import { Link } from 'react-router-dom';
+import { useProductStore } from '../../store/useProductStore';
+import { Product, productService } from '../../services/productService';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { ErrorMessage } from '../../components/ErrorMessage';
 
 export default function ShopDashboard() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { products, loading, error, fetchProducts, addProduct, updateProduct, deleteProduct } = useProductStore();
   
-  // Modal States
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const data = await shopService.getProducts();
-      setProducts(data);
-    } catch (err) {
-      console.error('Fetch failed:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchProducts]);
 
   const handleAddProduct = async (formData: any) => {
     try {
       let imageUrl = 'https://via.placeholder.com/600';
       if (formData.imageFile) {
-        imageUrl = await shopService.uploadImage(formData.imageFile);
+        imageUrl = await productService.uploadImage(formData.imageFile);
       }
       
-      const newProduct = await shopService.createProduct({
+      await addProduct({
         name: formData.name,
         price: formData.price,
         description: formData.description,
         image_url: imageUrl,
         category: formData.category
       });
-
-      setProducts(prev => [newProduct, ...prev]);
+      setIsAddModalOpen(false);
     } catch (err) {
-      console.error('Add failed:', err);
-      throw err;
+      // Error is handled by store but we can catch it here if needed for UI feedback
     }
   };
 
@@ -56,35 +44,24 @@ export default function ShopDashboard() {
     try {
       let imageUrl = updatedData.image_url;
       if (updatedData.imageFile) {
-        imageUrl = await shopService.uploadImage(updatedData.imageFile);
+        imageUrl = await productService.uploadImage(updatedData.imageFile);
       }
 
-      const savedProduct = await shopService.updateProduct(updatedData.id, {
+      await updateProduct(updatedData.id, {
         name: updatedData.name,
         price: updatedData.price,
         description: updatedData.description,
         image_url: imageUrl,
         category: updatedData.category
       });
-
-      setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
-    } catch (err) {
-      console.error('Update failed:', err);
-      throw err;
-    }
+      setEditingProduct(null);
+    } catch (err) {}
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      await shopService.deleteProduct(id);
-      setProducts(prev => prev.filter(p => p.id !== id));
-      setDeletingId(null);
-    } catch (err) {
-      console.error('Delete failed:', err);
-    }
+    await deleteProduct(id);
+    setDeletingId(null);
   };
-
-  if (loading) return <AdminLayout title="Shop Management"><div className="loader"><div className="loader__spinner"></div></div></AdminLayout>;
 
   return (
     <AdminLayout title="Shop Management">
@@ -107,57 +84,75 @@ export default function ShopDashboard() {
         </button>
       </header>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl overflow-x-auto">
-        <table className="w-full text-left min-w-[600px]">
-          <thead className="bg-slate-800/50 text-slate-500 text-[10px] uppercase font-black tracking-widest">
-            <tr>
-              <th className="px-8 py-5">Product Details</th>
-              <th className="px-8 py-5 text-right">Price</th>
-              <th className="px-8 py-5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/50">
-            {products.map(p => (
-              <tr key={p.id} className="hover:bg-slate-800/20 transition-colors group">
-                <td className="px-8 py-6">
-                  <div className="flex items-center gap-5">
-                    <img src={p.image_url} className="w-12 h-12 rounded-xl object-cover border border-slate-800 shadow-lg bg-slate-950" alt={p.name} />
-                    <div>
-                      <div className="font-bold text-white group-hover:text-emerald-400 transition-colors">{p.name}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{p.category}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-8 py-6 text-right font-mono font-bold text-emerald-400 text-lg">
-                  ${p.price.toFixed(2)}
-                </td>
-                <td className="px-8 py-6">
-                  <div className="flex justify-end gap-3">
-                    {deletingId === p.id ? (
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleDelete(p.id)} className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-400 transition-colors">Confirm</button>
-                        <button onClick={() => setDeletingId(null)} className="text-slate-400 text-xs hover:text-white">Cancel</button>
-                      </div>
-                    ) : (
-                      <>
-                        <button 
-                          onClick={() => setEditingProduct(p)}
-                          className="p-2.5 bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => setDeletingId(p.id)} className="p-2.5 bg-slate-800/50 text-slate-600 hover:text-red-400 rounded-xl transition-all"><Trash2 className="w-4 h-4" /></button>
-                      </>
-                    )}
-                  </div>
-                </td>
+      {/* Main Content Area */}
+      {loading && products.length === 0 ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorMessage message={error} onRetry={fetchProducts} />
+      ) : (
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <table className="w-full text-left min-w-[600px]">
+            <thead className="bg-slate-800/50 text-slate-500 text-[10px] uppercase font-black tracking-widest">
+              <tr>
+                <th className="px-8 py-5">Product Details</th>
+                <th className="px-8 py-5 text-right">Price</th>
+                <th className="px-8 py-5 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50">
+              {products.map(p => (
+                <tr key={p.id} className="hover:bg-slate-800/20 transition-colors group">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-5">
+                      <img src={p.image_url} className="w-12 h-12 rounded-xl object-cover border border-slate-800 shadow-lg bg-slate-950" alt={p.name} />
+                      <div>
+                        <div className="font-bold text-white group-hover:text-emerald-400 transition-colors">{p.name}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{p.category}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 text-right font-mono font-bold text-emerald-400 text-lg">
+                    ${p.price.toFixed(2)}
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex justify-end gap-3">
+                      {deletingId === p.id ? (
+                        <div className="flex items-center gap-2">
+                          <button 
+                            disabled={loading}
+                            onClick={() => handleDelete(p.id)} 
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-400 transition-colors"
+                          >
+                            {loading ? '...' : 'Confirm'}
+                          </button>
+                          <button onClick={() => setDeletingId(null)} className="text-slate-400 text-xs hover:text-white">Cancel</button>
+                        </div>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => setEditingProduct(p)}
+                            className="p-2.5 bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setDeletingId(p.id)} className="p-2.5 bg-slate-800/50 text-slate-600 hover:text-red-400 rounded-xl transition-all"><Trash2 className="w-4 h-4" /></button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {products.length === 0 && !loading && (
+            <div className="py-20 text-center text-slate-500">No products available. Add your first product!</div>
+          )}
+        </div>
+      )}
 
-      {/* MODALS */}
+      {/* Global Loading Overlay for Mutations */}
+      {loading && products.length > 0 && <LoadingSpinner fullPage />}
+
       <AddProductModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
