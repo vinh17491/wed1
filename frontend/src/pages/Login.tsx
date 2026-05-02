@@ -1,162 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { authApi } from '../api';
-import { useAuth } from '../contexts';
-import { useGoogleLogin } from '@react-oauth/google';
-import { Github, Chrome, Play } from 'lucide-react';
+import React, { useState } from 'react';
+import { authService } from '../dulieu/authService';
+import { Link, useNavigate } from 'react-router-dom';
 
-import MinecraftNavbar from '../components/MinecraftNavbar';
-import MinecraftVideoBackground from '../components/MinecraftVideoBackground';
-import MinecraftOfficialPanel from '../components/MinecraftOfficialPanel';
-import MinecraftLoginForm from '../components/MinecraftLoginForm';
-import MinecraftTactileButton from '../components/MinecraftTactileButton';
-
-type MinecraftAuthView = 'selection' | 'login' | 'register';
-
-const Login: React.FC = () => {
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
-  const from = (location.state as any)?.from?.pathname || '/';
 
-  const [view, setView] = useState<MinecraftAuthView>('selection');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({
-    system: false,
-    google: false,
-    github: false
-  });
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  const setLoading = (key: string, value: boolean) => {
-    setIsLoading(prev => ({ ...prev, [key]: value }));
-  };
-
-  useEffect(() => {
-    setError('');
-  }, [view]);
-
-  const handleSystemLogin = async (username: string, password: string) => {
-    setLoading('system', true);
-    setError('');
-    try {
-      const res = await authApi.login({ username, password });
-      const { token, username: resUser, role } = res.data.data;
-      login(token, resUser, role);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid username or password.');
-    } finally {
-      setLoading('system', false);
+    const { error } = await authService.signIn(email, password);
+    
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    } else {
+      navigate('/shop');
     }
   };
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setLoading('google', true);
-      try {
-        const res = await authApi.googleLogin(tokenResponse.access_token);
-        const { token, username: resUser, role } = res.data.data;
-        login(token, resUser, role);
-        navigate(from, { replace: true });
-      } catch (err) {
-        setError('Google Login failed.');
-      } finally {
-        setLoading('google', false);
-      }
-    },
-  });
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#020617] relative overflow-hidden">
-      {/* Official Top Navbar */}
-      <MinecraftNavbar />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+        <h1 className="text-3xl font-black text-white mb-2">Welcome Back</h1>
+        <p className="text-slate-400 mb-8">Sign in to your account</p>
 
-      {/* Cinematic Video Background */}
-      <MinecraftVideoBackground />
+        <form onSubmit={handleLogin} className="space-y-6">
+          {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm">{error}</div>}
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
+            <input 
+              type="email" required
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 transition-all"
+              value={email} onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <AnimatePresence mode="wait">
-          {view === 'selection' && (
-            <div className="flex flex-col items-center w-full">
-              <MinecraftOfficialPanel 
-                onLogin={() => setView('login')}
-                onRegister={() => navigate('/register')}
-                onBack={() => navigate('/')}
-              />
-              
-              {/* Other Methods Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="mt-12 flex flex-col items-center gap-4"
-              >
-                <p className="text-white/60 font-bold text-xs uppercase tracking-widest">Other sign in methods</p>
-                <div className="flex gap-4">
-                  <MinecraftTactileButton 
-                    variant="gray" 
-                    className="!w-auto !p-0"
-                    onClick={() => googleLogin()}
-                  >
-                    <div className="px-6 py-2 flex items-center gap-2">
-                      <Chrome size={18} />
-                      <span className="text-sm">GOOGLE</span>
-                    </div>
-                  </MinecraftTactileButton>
-                  
-                  <MinecraftTactileButton 
-                    variant="gray" 
-                    className="!w-auto !p-0"
-                    onClick={() => setLoading('github', true)}
-                  >
-                    <div className="px-6 py-2 flex items-center gap-2">
-                      <Github size={18} />
-                      <span className="text-sm">GITHUB</span>
-                    </div>
-                  </MinecraftTactileButton>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">Password</label>
+            <input 
+              type="password" required
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 transition-all"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-                  <MinecraftTactileButton 
-                    variant="gray" 
-                    className="!w-auto !p-0"
-                    onClick={() => navigate('/')}
-                  >
-                    <div className="px-6 py-2 flex items-center gap-2">
-                      <Play size={18} />
-                      <span className="text-sm">GUEST</span>
-                    </div>
-                  </MinecraftTactileButton>
-                </div>
-              </motion.div>
-            </div>
-          )}
+          <button 
+            type="submit" disabled={loading}
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 rounded-2xl transition-all disabled:opacity-50"
+          >
+            {loading ? 'Signing In...' : 'Sign In'}
+          </button>
+        </form>
 
-          {view === 'login' && (
-            <div className="w-full max-w-[500px]">
-              <MinecraftLoginForm 
-                onSubmit={handleSystemLogin}
-                isLoading={isLoading.system}
-                error={error}
-                onBack={() => setView('selection')}
-              />
-            </div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Page Footer */}
-      <footer className="relative z-10 py-6 text-center text-white/40 text-xs font-bold uppercase tracking-widest">
-        <div className="flex justify-center gap-8 mb-2">
-          <button className="hover:text-white transition-colors">Privacy Policy</button>
-          <button className="hover:text-white transition-colors">Terms of Use</button>
-          <button className="hover:text-white transition-colors">Cookies</button>
-        </div>
-        <p>© 2026 MOJANG AB. MINECRAFT IS A TRADEMARK OF MOJANG SYNERGIES AB.</p>
-      </footer>
+        <p className="mt-8 text-center text-slate-500 text-sm">
+          Don't have an account? <Link to="/register" className="text-emerald-500 hover:underline">Register now</Link>
+        </p>
+      </div>
     </div>
   );
-};
-
-export default Login;
-
+}

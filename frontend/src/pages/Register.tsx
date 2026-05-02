@@ -1,58 +1,69 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { authApi } from '../api';
+import { authService } from '../dulieu/authService';
+import { Link, useNavigate } from 'react-router-dom';
 
-import MinecraftNavbar from '../components/MinecraftNavbar';
-import MinecraftVideoBackground from '../components/MinecraftVideoBackground';
-import MinecraftRegisterForm from '../components/MinecraftRegisterForm';
-
-const Register: React.FC = () => {
-  const navigate = useNavigate();
-  const [error, setError] = useState('');
+export default function Register() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleRegister = async (data: any) => {
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError('');
-    try {
-      await authApi.register(data);
-      navigate('/login', { state: { message: 'Registration successful! Please sign in.' } });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try again.');
-    } finally {
+    setError(null);
+
+    const { error } = await authService.signUp(email, password);
+    
+    if (error) {
+      setError(error.message);
       setLoading(false);
+    } else {
+      alert('Check your email for the confirmation link!');
+      navigate('/login');
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#020617] relative overflow-hidden">
-      {/* Official Top Navbar */}
-      <MinecraftNavbar />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+        <h1 className="text-3xl font-black text-white mb-2">Join Us</h1>
+        <p className="text-slate-400 mb-8">Create your premium account</p>
 
-      {/* Cinematic Video Background */}
-      <MinecraftVideoBackground />
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-[500px]">
-          <div className="bg-[#e6e4e2] border-4 border-[#333] shadow-2xl overflow-hidden">
-            <MinecraftRegisterForm 
-              onSubmit={handleRegister}
-              isLoading={loading}
-              error={error}
-              onBack={() => navigate('/login')}
+        <form onSubmit={handleRegister} className="space-y-6">
+          {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm">{error}</div>}
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
+            <input 
+              type="email" required
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 transition-all"
+              value={email} onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-        </div>
-      </main>
 
-      {/* Page Footer */}
-      <footer className="relative z-10 py-6 text-center text-white/40 text-xs font-bold uppercase tracking-widest">
-        <p>© 2026 MOJANG AB. MINECRAFT IS A TRADEMARK OF MOJANG SYNERGIES AB.</p>
-      </footer>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-2">Password (min. 6 chars)</label>
+            <input 
+              type="password" required minLength={6}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 transition-all"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button 
+            type="submit" disabled={loading}
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-4 rounded-2xl transition-all disabled:opacity-50"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <p className="mt-8 text-center text-slate-500 text-sm">
+          Already have an account? <Link to="/login" className="text-emerald-500 hover:underline">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
-};
-
-export default Register;
+}
