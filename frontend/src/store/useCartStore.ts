@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+import { Product } from '../types/shop';
+
 export interface CartItem {
   id: string; 
   productId: string;
-  name: string;
-  price: number;
+  product: Product;
   quantity: number;
-  image?: string;
   selectedOptions?: Record<string, string>;
   note?: string;
 }
@@ -18,6 +18,7 @@ interface CartState {
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  getCartTotal: () => number;
 }
 
 const isSameConfig = (item1: Partial<CartItem>, item2: Partial<CartItem>) => {
@@ -66,6 +67,10 @@ export const useCartStore = create<CartState>()(
         )
       })),
       clearCart: () => set({ cartItems: [] }),
+      getCartTotal: () => {
+        const state = (useCartStore.getState() as any);
+        return (state.cartItems || []).reduce((acc: number, item: any) => acc + (item.product.price * item.quantity), 0);
+      },
     }),
     {
       name: STORAGE_KEY,

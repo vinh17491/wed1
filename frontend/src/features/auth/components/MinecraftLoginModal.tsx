@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Diamond, Pickaxe, Sword, Box, Users, ShieldCheck, Gamepad2 } from 'lucide-react';
 
 import './MinecraftLoginModal.css';
-import MinecraftVideoBackground from './MinecraftVideoBackground';
+import MinecraftVideoBackground from '../../../components/MinecraftVideoBackground';
 
 
 interface MinecraftLoginModalProps {

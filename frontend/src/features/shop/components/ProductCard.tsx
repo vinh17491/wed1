@@ -16,9 +16,7 @@ export default function ProductCard({ product, onQuickView }: { product: Product
     e.stopPropagation();
     addToCart({
       productId: product.id,
-      name: name,
-      price: price,
-      image: imageUrl
+      product: product
     });
   };
 

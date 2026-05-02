@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, User, Mail, AlertCircle } from 'lucide-react';
-import MinecraftTactileButton from './MinecraftTactileButton';
+import MinecraftTactileButton from '../../../components/MinecraftTactileButton';
 import './MinecraftLoginForm.css'; // Reusing common form styles
 
 interface MinecraftRegisterFormProps {

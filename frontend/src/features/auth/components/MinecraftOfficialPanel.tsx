@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Diamond, Pickaxe, Box, Users, ShieldCheck, Gamepad2, ArrowLeft } from 'lucide-react';
-import MinecraftTactileButton from './MinecraftTactileButton';
+import MinecraftTactileButton from '../../../components/MinecraftTactileButton';
 import './MinecraftOfficialPanel.css';
 
 interface MinecraftOfficialPanelProps {

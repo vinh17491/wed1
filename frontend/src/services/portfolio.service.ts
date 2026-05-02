@@ -1,4 +1,5 @@
 import { portfolioApi } from '../api/portfolio.api';
+import { analyticsApi } from '../api/analytics.api';
 
 export const portfolioService = {
   // Profile
@@ -63,5 +64,10 @@ export const portfolioService = {
   async deleteExperience(id: number) {
     const res = await portfolioApi.deleteExperience(id);
     return res.data;
+  },
+
+  // Analytics
+  async trackView(page: string, deviceType: string) {
+    return analyticsApi.track({ page, deviceType });
   }
 };

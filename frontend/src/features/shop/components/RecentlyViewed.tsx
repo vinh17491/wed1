@@ -1,5 +1,5 @@
-import { useExtraStore } from '../../store/useExtraStore';
-import { useUIStore } from '../../store/useUIStore';
+import { useExtraStore } from '../../../store/useExtraStore';
+import { useUIStore } from '../../../store/useUIStore';
 
 export function RecentlyViewed() {
   const { recentlyViewed } = useExtraStore();
@@ -11,7 +11,7 @@ export function RecentlyViewed() {
     <div className="mt-16 pt-12 border-t border-slate-800">
       <h3 className="text-xl font-bold text-white mb-6">Recently Viewed</h3>
       <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
-        {recentlyViewed.map((product) => (
+        {recentlyViewed.map((product: any) => (
           <div
             key={product.id}
             onClick={() => openProductModal(product)}

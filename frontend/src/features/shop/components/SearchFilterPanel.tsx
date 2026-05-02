@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { useExtraStore } from '../../store/useExtraStore';
-import { useDebounce } from '../../hooks/useDebounce';
+import { useExtraStore } from '../../../store/useExtraStore';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 const CATEGORIES = ['All', 'Design', 'Video Editing', 'Music', 'Entertainment', 'Productivity'];
 

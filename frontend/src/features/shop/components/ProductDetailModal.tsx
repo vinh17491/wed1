@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Check, ShieldCheck, Loader2 } from 'lucide-react';
-import { useUIStore } from '../../store/useUIStore';
-import { useCartStore } from '../../store/useCartStore';
+import { useUIStore } from '../../../store/useUIStore';
+import { useCartStore } from '../../../store/useCartStore';
 import { FakeStarRating } from './FakeStarRating';
 
 export function ProductDetailModal() {
@@ -128,7 +128,7 @@ export function ProductDetailModal() {
               {/* Thumbnails */}
               {selectedProduct.gallery.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-                  {selectedProduct.gallery.map((img, idx) => (
+                  {selectedProduct.gallery.map((img: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}

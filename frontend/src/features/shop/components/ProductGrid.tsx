@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useProducts } from '../../shop/hooks/useProducts';
 import { useExtraStore } from '../../../store/useExtraStore';
-import { ProductCard } from './ProductCard';
+import ProductCard from './ProductCard';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
 import { ErrorMessage } from '../../../components/ErrorMessage';
 

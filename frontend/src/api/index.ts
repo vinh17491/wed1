@@ -4,3 +4,7 @@ export * from './feedback.api';
 export * from './product.api';
 export * from './analytics.api';
 export * from './chat.api';
+export * from './experience.api';
+export * from './projects.api';
+export * from './skills.api';
+export * from './admin.api';
