@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { triggerHaptic } from '../../utils/emotionEngine';
+import { triggerHaptic } from '../../core/animations';
 
 interface FallingHeart {
   id: number;
