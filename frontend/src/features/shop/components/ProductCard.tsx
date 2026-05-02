@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShoppingCart, Eye, Heart } from 'lucide-react';
-import { Product } from '../../dulieu/shopService';
-import { useCartStore } from '../../store/useCartStore';
+import { Product } from '../../../services/productService';
+import { useCartStore } from '../../../store/useCartStore';
 
 export default function ProductCard({ product, onQuickView }: { product: Product, onQuickView?: () => void }) {
   const addToCart = useCartStore(state => state.addToCart);

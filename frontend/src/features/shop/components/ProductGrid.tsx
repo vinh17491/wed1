@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useProductStore } from '../../store/useProductStore';
-import { useExtraStore } from '../../store/useExtraStore';
+import { useProductStore } from '../../../store/useProductStore';
+import { useExtraStore } from '../../../store/useExtraStore';
 import { ProductCard } from './ProductCard';
-import { Product } from '../../types/shop';
+import { Product } from '../../../types/shop';
 
 const containerVariants = {
   hidden: { opacity: 0 },

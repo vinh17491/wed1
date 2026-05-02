@@ -3,14 +3,14 @@ import { ShoppingCart } from 'lucide-react';
 import { useUIStore } from '../store/useUIStore';
 import { useCartStore } from '../store/useCartStore';
 
-import { ShopHero } from '../components/shop/ShopHero';
-import { SearchFilterPanel } from '../components/shop/SearchFilterPanel';
-import { ProductGrid } from '../components/shop/ProductGrid';
-import { CartDrawer } from '../components/shop/CartDrawer';
-import { RecentlyViewed } from '../components/shop/RecentlyViewed';
+import { ShopHero } from '../features/shop/components/ShopHero';
+import { SearchFilterPanel } from '../features/shop/components/SearchFilterPanel';
+import { ProductGrid } from '../features/shop/components/ProductGrid';
+import { CartDrawer } from '../features/cart/components/CartDrawer';
+import { RecentlyViewed } from '../features/shop/components/RecentlyViewed';
 import { lazy, Suspense } from 'react';
 
-const ProductDetailModal = lazy(() => import('../components/shop/ProductDetailModal').then(module => ({ default: module.ProductDetailModal })));
+const ProductDetailModal = lazy(() => import('../features/shop/components/ProductDetailModal').then(module => ({ default: module.ProductDetailModal })));
 
 export default function ShopHome() {
   const { setCartOpen } = useUIStore();

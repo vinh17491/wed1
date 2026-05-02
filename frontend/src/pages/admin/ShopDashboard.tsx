@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { shopService, Product } from '../../dulieu/shopService';
+import { productService as shopService, Product } from '../../services/productService';
 import { Package, Plus, Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import AdminLayout from './AdminLayout';
-import AddProductModal from '../../components/shop/AddProductModal';
-import EditProductModal from '../../components/shop/EditProductModal';
+import AddProductModal from '../../features/shop/components/AddProductModal';
+import EditProductModal from '../../features/shop/components/EditProductModal';
 import { Link } from 'react-router-dom';
 
 export default function ShopDashboard() {

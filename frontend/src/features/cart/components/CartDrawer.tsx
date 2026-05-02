@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Plus, Minus, Tag, ShoppingCart, Loader2 } from 'lucide-react';
-import { useCartStore } from '../../store/useCartStore';
-import { useUIStore } from '../../store/useUIStore';
-import { useExtraStore } from '../../store/useExtraStore';
-import { Coupon } from '../../types/shop';
+import { useCartStore } from '../../../store/useCartStore';
+import { useUIStore } from '../../../store/useUIStore';
+import { useExtraStore } from '../../../store/useExtraStore';
+import { Coupon } from '../../../types/shop';
 
 const VALID_COUPONS: Coupon[] = [
   { code: 'MINECRAFT20', type: 'percent', value: 20 },
