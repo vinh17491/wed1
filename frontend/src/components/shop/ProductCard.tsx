@@ -29,8 +29,8 @@ export const ProductCard = memo(function ProductCard({ product, index }: Product
     
     setIsAdding(true);
     
-    // Simulated network delay (600ms) for premium feel
-    await new Promise(resolve => setTimeout(resolve, 600));
+    // Simulated network delay (500ms) for premium feel
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     addToCart({
       id: crypto.randomUUID(),

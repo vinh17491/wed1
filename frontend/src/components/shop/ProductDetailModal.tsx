@@ -43,7 +43,7 @@ export function ProductDetailModal() {
     if (isAdding || isAdded) return;
     
     setIsAdding(true);
-    await new Promise(resolve => setTimeout(resolve, 600)); // Simulated delay
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulated delay
     
     addToCart({
       id: crypto.randomUUID(),
@@ -90,7 +90,7 @@ export function ProductDetailModal() {
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]"
           >
             <button
@@ -176,7 +176,7 @@ export function ProductDetailModal() {
                   <span className="text-slate-400 font-medium">Quantity:</span>
                   <div className="flex items-center bg-slate-950 rounded-xl border border-slate-800 p-1">
                     <motion.button
-                      whileTap={{ scale: quantity > 1 ? 0.9 : 1 }}
+                      whileTap={{ scale: quantity > 1 ? 0.95 : 1 }}
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
                       className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -187,7 +187,7 @@ export function ProductDetailModal() {
                       {quantity}
                     </div>
                     <motion.button
-                      whileTap={{ scale: 0.9 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setQuantity(quantity + 1)}
                       className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                     >
@@ -198,7 +198,7 @@ export function ProductDetailModal() {
 
                 <div className="pt-2">
                   <motion.button
-                    whileTap={{ scale: (isAdding || isAdded) ? 1 : 0.98 }}
+                    whileTap={{ scale: (isAdding || isAdded) ? 1 : 0.95 }}
                     onClick={handleAddToCart}
                     disabled={isAdding || isAdded}
                     className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
