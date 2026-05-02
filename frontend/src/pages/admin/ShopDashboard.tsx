@@ -1,67 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Package, Plus, Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import AddProductModal from '../../features/shop/components/AddProductModal';
 import EditProductModal from '../../features/shop/components/EditProductModal';
 import { Link } from 'react-router-dom';
-import { useProductStore } from '../../store/useProductStore';
-import { Product, productService } from '../../services/productService';
+import { useProducts, useProductMutations } from '../../features/shop/hooks/useProducts';
+import { Product } from '../../services/productService';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
 export default function ShopDashboard() {
-  const { products, loading, error, fetchProducts, addProduct, updateProduct, deleteProduct } = useProductStore();
+  // Logic & Data Fetching (Senior Pattern)
+  const { data: products = [], isLoading, error, refetch } = useProducts();
+  const { addMutation, updateMutation, deleteMutation } = useProductMutations();
   
+  // UI States
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   const handleAddProduct = async (formData: any) => {
     try {
-      let imageUrl = 'https://via.placeholder.com/600';
-      if (formData.imageFile) {
-        imageUrl = await productService.uploadImage(formData.imageFile);
-      }
-      
-      await addProduct({
-        name: formData.name,
-        price: formData.price,
-        description: formData.description,
-        image_url: imageUrl,
-        category: formData.category
-      });
+      await addMutation.mutateAsync(formData);
       setIsAddModalOpen(false);
     } catch (err) {
-      // Error is handled by store but we can catch it here if needed for UI feedback
+      console.error('Add product failed:', err);
     }
   };
 
   const handleEditSave = async (updatedData: any) => {
     try {
-      let imageUrl = updatedData.image_url;
-      if (updatedData.imageFile) {
-        imageUrl = await productService.uploadImage(updatedData.imageFile);
-      }
-
-      await updateProduct(updatedData.id, {
-        name: updatedData.name,
-        price: updatedData.price,
-        description: updatedData.description,
-        image_url: imageUrl,
-        category: updatedData.category
-      });
+      await updateMutation.mutateAsync(updatedData);
       setEditingProduct(null);
-    } catch (err) {}
+    } catch (err) {
+      console.error('Update product failed:', err);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await deleteProduct(id);
-    setDeletingId(null);
+    try {
+      await deleteMutation.mutateAsync(id);
+      setDeletingId(null);
+    } catch (err) {
+      console.error('Delete product failed:', err);
+    }
   };
+
+  const isMutating = addMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <AdminLayout title="Shop Management">
@@ -85,10 +70,10 @@ export default function ShopDashboard() {
       </header>
 
       {/* Main Content Area */}
-      {loading && products.length === 0 ? (
+      {isLoading ? (
         <LoadingSpinner />
       ) : error ? (
-        <ErrorMessage message={error} onRetry={fetchProducts} />
+        <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
           <table className="w-full text-left min-w-[600px]">
@@ -119,11 +104,11 @@ export default function ShopDashboard() {
                       {deletingId === p.id ? (
                         <div className="flex items-center gap-2">
                           <button 
-                            disabled={loading}
+                            disabled={isMutating}
                             onClick={() => handleDelete(p.id)} 
-                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-400 transition-colors"
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-400 transition-colors disabled:opacity-50"
                           >
-                            {loading ? '...' : 'Confirm'}
+                            {deleteMutation.isPending ? '...' : 'Confirm'}
                           </button>
                           <button onClick={() => setDeletingId(null)} className="text-slate-400 text-xs hover:text-white">Cancel</button>
                         </div>
@@ -144,14 +129,14 @@ export default function ShopDashboard() {
               ))}
             </tbody>
           </table>
-          {products.length === 0 && !loading && (
+          {products.length === 0 && !isLoading && (
             <div className="py-20 text-center text-slate-500">No products available. Add your first product!</div>
           )}
         </div>
       )}
 
-      {/* Global Loading Overlay for Mutations */}
-      {loading && products.length > 0 && <LoadingSpinner fullPage />}
+      {/* Mutation Loading Overlay */}
+      {isMutating && <LoadingSpinner fullPage />}
 
       <AddProductModal 
         isOpen={isAddModalOpen} 

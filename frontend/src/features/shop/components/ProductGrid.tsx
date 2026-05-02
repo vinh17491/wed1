@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useProductStore } from '../../../store/useProductStore';
+import { useProducts } from '../../shop/hooks/useProducts';
 import { useExtraStore } from '../../../store/useExtraStore';
 import { ProductCard } from './ProductCard';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
@@ -17,19 +17,15 @@ const containerVariants = {
 };
 
 export function ProductGrid() {
-  const { products, loading, error, fetchProducts } = useProductStore();
+  // Senior Pattern: React Query handles fetching, caching and revalidation
+  const { data: products = [], isLoading, error, refetch } = useProducts();
   const { filters } = useExtraStore();
   
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (products.length === 0) {
-      fetchProducts();
-    }
-  }, [fetchProducts, products.length]);
-
+  // Apply filters (UI logic)
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(filters.search.toLowerCase()) || 
@@ -41,10 +37,12 @@ export function ProductGrid() {
     });
   }, [products, filters]);
 
+  // Reset page when filters change
   useEffect(() => {
     setPage(1);
   }, [filters]);
 
+  // Update displayed products for infinite scroll
   const displayedProducts = useMemo(() => {
     return filteredProducts.slice(0, page * itemsPerPage);
   }, [page, filteredProducts]);
@@ -72,12 +70,12 @@ export function ProductGrid() {
     return () => observer.unobserve(element);
   }, [handleObserver]);
 
-  if (loading && products.length === 0) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
   if (error) {
-    return <ErrorMessage message={error} onRetry={fetchProducts} />;
+    return <ErrorMessage message={(error as Error).message} onRetry={() => refetch()} />;
   }
 
   return (
@@ -100,6 +98,7 @@ export function ProductGrid() {
             ))}
           </motion.div>
           
+          {/* Infinite scroll loader */}
           {displayedProducts.length < filteredProducts.length && (
             <div ref={observerTarget} className="py-10 flex justify-center">
               <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
