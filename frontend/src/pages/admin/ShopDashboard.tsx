@@ -1,52 +1,30 @@
 import React, { useState } from 'react';
-import { Package, Plus, Edit2, Trash2, ChevronLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, ChevronLeft } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import AddProductModal from '../../features/shop/components/AddProductModal';
 import EditProductModal from '../../features/shop/components/EditProductModal';
 import { Link } from 'react-router-dom';
-import { useProducts, useProductMutations } from '../../features/shop/hooks/useProducts';
-import { Product } from '../../features/shop/types';
+import { useProducts, useProductMutations } from '../../hooks/useProducts';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
 export default function ShopDashboard() {
-  // Logic & Data Fetching (Senior Pattern)
   const { data: products = [], isLoading, error, refetch } = useProducts();
-  const { addMutation, updateMutation, deleteMutation } = useProductMutations();
+  const { createProduct, updateProduct, deleteProduct, isMutating } = useProductMutations();
   
-  // UI States
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   const handleAddProduct = async (formData: any) => {
-    try {
-      await addMutation.mutateAsync(formData);
-      setIsAddModalOpen(false);
-    } catch (err) {
-      console.error('Add product failed:', err);
-    }
+    await createProduct.mutateAsync(formData);
+    setIsAddModalOpen(false);
   };
 
   const handleEditSave = async (updatedData: any) => {
-    try {
-      await updateMutation.mutateAsync(updatedData);
-      setEditingProduct(null);
-    } catch (err) {
-      console.error('Update product failed:', err);
-    }
+    await updateProduct.mutateAsync(updatedData);
+    setEditingProduct(null);
   };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMutation.mutateAsync(id);
-      setDeletingId(null);
-    } catch (err) {
-      console.error('Delete product failed:', err);
-    }
-  };
-
-  const isMutating = addMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <AdminLayout title="Shop Management">
@@ -69,7 +47,6 @@ export default function ShopDashboard() {
         </button>
       </header>
 
-      {/* Main Content Area */}
       {isLoading ? (
         <LoadingSpinner />
       ) : error ? (
@@ -105,10 +82,10 @@ export default function ShopDashboard() {
                         <div className="flex items-center gap-2">
                           <button 
                             disabled={isMutating}
-                            onClick={() => handleDelete(p.id)} 
+                            onClick={() => deleteProduct.mutate(p.id)} 
                             className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-400 transition-colors disabled:opacity-50"
                           >
-                            {deleteMutation.isPending ? '...' : 'Confirm'}
+                            {deleteProduct.isPending ? '...' : 'Confirm'}
                           </button>
                           <button onClick={() => setDeletingId(null)} className="text-slate-400 text-xs hover:text-white">Cancel</button>
                         </div>
@@ -129,13 +106,9 @@ export default function ShopDashboard() {
               ))}
             </tbody>
           </table>
-          {products.length === 0 && !isLoading && (
-            <div className="py-20 text-center text-slate-500">No products available. Add your first product!</div>
-          )}
         </div>
       )}
 
-      {/* Mutation Loading Overlay */}
       {isMutating && <LoadingSpinner fullPage />}
 
       <AddProductModal 

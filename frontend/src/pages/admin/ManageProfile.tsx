@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { profileApi } from '../../api';
+import { portfolioService } from '../../services/portfolio.service';
 import AdminLayout from './AdminLayout';
 import './AdminLayout.css';
 
@@ -10,8 +10,8 @@ export default function ManageProfile() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    profileApi.get().then(res => {
-      setProfile(res.data.data);
+    portfolioService.getProfile().then(data => {
+      setProfile(data);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -21,7 +21,7 @@ export default function ManageProfile() {
     setSaving(true);
     setSuccess(false);
     try {
-      await profileApi.update(profile);
+      await portfolioService.updateProfile(profile);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch {

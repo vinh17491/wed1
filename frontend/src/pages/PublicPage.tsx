@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { profileApi, skillsApi, projectsApi, experienceApi, analyticsApi } from '../api';
+import { usePortfolioData, usePageTracking } from '../hooks/usePortfolio';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -13,54 +12,23 @@ import Footer from '../components/Footer';
 
 export default function PublicPage() {
   const { i18n } = useTranslation();
-  const [profile, setProfile] = useState<any>(null);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [experiences, setExperiences] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Logic Layer (Hooks handle side effects and data fetching)
+  const { data, isLoading } = usePortfolioData();
+  usePageTracking(window.location.pathname);
 
-  useEffect(() => {
-    const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
-    analyticsApi.track(window.location.pathname, deviceType).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [p, s, pr, ex] = await Promise.all([
-          profileApi.get(),
-          skillsApi.getAll(),
-          projectsApi.getAll(),
-          experienceApi.getAll(),
-        ]);
-        setProfile(p.data.data);
-        setSkills(s.data.data);
-        setProjects(pr.data.data);
-        setExperiences(ex.data.data);
-      } catch (err) {
-        console.error('Failed to fetch portfolio data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, [i18n.language]);
-
-  useEffect(() => {
-    if (profile) {
-      document.title = `${profile.fullName} - ${profile.title}`;
-    }
-  }, [profile]);
+  // Default values
+  const { profile = null, skills = [], projects = [], experiences = [] } = data || {};
 
   return (
     <>
       <Navbar />
       <main>
-        <Hero profile={profile} loading={loading} />
+        <Hero profile={profile} loading={isLoading} />
         <About profile={profile} />
-        <Skills skills={skills} loading={loading} />
-        <Projects projects={projects} loading={loading} />
-        <ExperienceSection experiences={experiences} loading={loading} />
+        <Skills skills={skills} loading={isLoading} />
+        <Projects projects={projects} loading={isLoading} />
+        <ExperienceSection experiences={experiences} loading={isLoading} />
         <Contact profile={profile} />
       </main>
       <Footer name={profile?.fullName} />

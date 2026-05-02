@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { feedbackApi } from '../api';
 import { useAuth } from '../contexts';
 import { Star, MessageSquare, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useFeedbackMutations } from '../hooks/useFeedbacks';
 
 const categories = [
   { id: 'Bug', label: 'Lỗi website', icon: '🐛' },
@@ -20,9 +20,8 @@ const Feedback: React.FC = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [category, setCategory] = useState('Other');
   const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
+  
+  const { submitFeedback } = useFeedbackMutations();
 
   if (!isAuthenticated) {
     return (
@@ -50,25 +49,15 @@ const Feedback: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
-      setErrorMsg('Vui lòng chọn số sao đánh giá.');
-      setStatus('error');
-      return;
-    }
-    setLoading(true);
-    setStatus('idle');
-    try {
-      await feedbackApi.submit({ rating, category, message });
-      setStatus('success');
-      setMessage('');
-      setRating(0);
-    } catch (err: any) {
-      setStatus('error');
-      setErrorMsg(err.response?.data?.message || 'Có lỗi xảy ra khi gửi góp ý.');
-    } finally {
-      setLoading(false);
-    }
+    if (rating === 0) return;
+    
+    await submitFeedback.mutateAsync({ rating, category, message });
+    setMessage('');
+    setRating(0);
   };
+
+  const status = submitFeedback.status;
+  const errorMsg = (submitFeedback.error as any)?.response?.data?.message || 'Có lỗi xảy ra khi gửi góp ý.';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 lg:py-24">
@@ -180,10 +169,10 @@ const Feedback: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitFeedback.isPending}
               className="w-full py-5 rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-xl flex items-center justify-center gap-3 shadow-xl shadow-blue-600/20 transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
             >
-              {loading ? (
+              {submitFeedback.isPending ? (
                 <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>

@@ -1,79 +1,54 @@
-import { supabase } from '../core/supabaseClient';
-import { Product, CreateProductPayload } from '../features/shop/types';
+import { productApi } from '../api/product.api';
 
 export const productService = {
   /**
-   * Lấy toàn bộ danh sách sản phẩm
+   * Lấy toàn bộ sản phẩm
    */
-  async getAll(): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(`Fetch failed: ${error.message}`);
+  async getAll() {
+    const { data, error } = await productApi.fetchList();
+    if (error) throw error;
     return data || [];
   },
 
   /**
-   * Thêm sản phẩm mới
+   * Tạo sản phẩm mới
    */
-  async create(payload: CreateProductPayload): Promise<Product> {
-    const { data, error } = await supabase
-      .from('products')
-      .insert([payload])
-      .select()
-      .single();
-
-    if (error) throw new Error(`Create failed: ${error.message}`);
+  async create(productData: any) {
+    const { data, error } = await productApi.create(productData);
+    if (error) throw error;
     return data;
   },
 
   /**
    * Cập nhật sản phẩm
    */
-  async update(id: string, updates: Partial<Product>): Promise<Product> {
-    const { data, error } = await supabase
-      .from('products')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw new Error(`Update failed: ${error.message}`);
+  async update(id: string, productData: any) {
+    const { data, error } = await productApi.update(id, productData);
+    if (error) throw error;
     return data;
   },
 
   /**
    * Xóa sản phẩm
    */
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw new Error(`Delete failed: ${error.message}`);
+  async delete(id: string) {
+    const { error } = await productApi.delete(id);
+    if (error) throw error;
+    return true;
   },
 
   /**
-   * Upload hình ảnh
+   * Upload ảnh lên storage và trả về URL công khai
    */
-  async uploadImage(file: File): Promise<string> {
+  async uploadImage(file: File) {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `product-images/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('products')
-      .upload(filePath, file);
+    const { error: uploadError } = await productApi.uploadStorage(filePath, file);
+    if (uploadError) throw uploadError;
 
-    if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('products')
-      .getPublicUrl(filePath);
-
+    const { data: { publicUrl } } = productApi.getPublicUrl(filePath);
     return publicUrl;
   }
 };

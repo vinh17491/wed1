@@ -1,27 +1,15 @@
 import React, { useState } from 'react';
-import { authService } from '../dulieu/authService';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAuthActions } from '../hooks/useAuth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const { login, loading, error } = useAuthActions();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error } = await authService.signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      navigate('/shop');
-    }
+    login(email, password);
   };
 
   return (
