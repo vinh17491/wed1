@@ -5,7 +5,7 @@ import AddProductModal from '../../features/shop/components/AddProductModal';
 import EditProductModal from '../../features/shop/components/EditProductModal';
 import { Link } from 'react-router-dom';
 import { useProducts, useProductMutations } from '../../features/shop/hooks/useProducts';
-import { Product } from '../../services/productService';
+import { Product } from '../../features/shop/types';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 

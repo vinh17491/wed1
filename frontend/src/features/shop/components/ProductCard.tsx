@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingCart, Eye, Heart } from 'lucide-react';
-import { Product } from '../../../services/productService';
+import { Product } from '../types';
 import { useCartStore } from '../../../store/useCartStore';
 
 export default function ProductCard({ product, onQuickView }: { product: Product, onQuickView?: () => void }) {

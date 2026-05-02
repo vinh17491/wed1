@@ -1,33 +1,31 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productService, Product } from '../../../services/productService';
+import { productService } from '../../../services/product.service';
+import { CreateProductPayload, Product } from '../types';
 
 /**
- * Hook lấy danh sách sản phẩm với Caching
+ * Hook truy vấn danh sách sản phẩm
  */
 export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
-    queryFn: productService.getProducts,
+    queryFn: productService.getAll,
   });
 };
 
 /**
- * Hook xử lý các thay đổi dữ liệu (CRUD)
+ * Hook xử lý thay đổi dữ liệu (Mutations)
  */
 export const useProductMutations = () => {
   const queryClient = useQueryClient();
 
   // Thêm sản phẩm (Bao gồm upload ảnh)
-  const addMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: async (formData: any) => {
-      let imageUrl = 'https://via.placeholder.com/600';
+      let imageUrl = formData.image_url || 'https://via.placeholder.com/600';
       if (formData.imageFile) {
         imageUrl = await productService.uploadImage(formData.imageFile);
       }
-      return productService.createProduct({
-        ...formData,
-        image_url: imageUrl
-      });
+      return productService.create({ ...formData, image_url: imageUrl });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -41,27 +39,24 @@ export const useProductMutations = () => {
       if (updatedData.imageFile) {
         imageUrl = await productService.uploadImage(updatedData.imageFile);
       }
-      return productService.updateProduct(updatedData.id, {
-        ...updatedData,
-        image_url: imageUrl
-      });
+      return productService.update(updatedData.id, { ...updatedData, image_url: imageUrl });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   });
 
-  // Xóa sản phẩm
   const deleteMutation = useMutation({
-    mutationFn: productService.deleteProduct,
+    mutationFn: (id: string) => productService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   });
 
   return {
-    addMutation,
-    updateMutation,
-    deleteMutation
+    createProduct: createMutation,
+    updateProduct: updateMutation,
+    deleteProduct: deleteMutation,
+    isPending: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
   };
 };
