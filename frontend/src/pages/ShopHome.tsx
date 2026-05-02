@@ -6,9 +6,11 @@ import { useCartStore } from '../store/useCartStore';
 import { ShopHero } from '../components/shop/ShopHero';
 import { SearchFilterPanel } from '../components/shop/SearchFilterPanel';
 import { ProductGrid } from '../components/shop/ProductGrid';
-import { ProductDetailModal } from '../components/shop/ProductDetailModal';
 import { CartDrawer } from '../components/shop/CartDrawer';
 import { RecentlyViewed } from '../components/shop/RecentlyViewed';
+import { lazy, Suspense } from 'react';
+
+const ProductDetailModal = lazy(() => import('../components/shop/ProductDetailModal').then(module => ({ default: module.ProductDetailModal })));
 
 export default function ShopHome() {
   const { setCartOpen } = useUIStore();
@@ -68,7 +70,9 @@ export default function ShopHome() {
       </main>
 
       {/* Overlays */}
-      <ProductDetailModal />
+      <Suspense fallback={null}>
+        <ProductDetailModal />
+      </Suspense>
       <CartDrawer />
     </div>
   );
