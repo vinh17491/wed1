@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingCart, Eye, Heart } from 'lucide-react';
-import { Product } from '../types';
+import { Product } from '../../../types/shop';
 import { useCartStore } from '../../../store/useCartStore';
 
 export default function ProductCard({ product, onQuickView }: { product: Product, onQuickView?: () => void }) {
@@ -10,7 +10,7 @@ export default function ProductCard({ product, onQuickView }: { product: Product
   const name = (product.name || 'Unnamed Product').trim();
   const price = Number(product.price || 0);
   const description = (product.description?.trim()) || 'No description available for this item.';
-  const imageUrl = product.image_url || 'https://images.unsplash.com/photo-1581235720704-06d3acfc1366?w=600&q=80';
+  const imageUrl = product.image || 'https://images.unsplash.com/photo-1581235720704-06d3acfc1366?w=600&q=80';
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();

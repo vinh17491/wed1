@@ -46,7 +46,6 @@ export function ProductDetailModal() {
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulated delay
     
     addToCart({
-      id: crypto.randomUUID(),
       productId: selectedProduct.id,
       product: selectedProduct,
       quantity: quantity
