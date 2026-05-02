@@ -16,11 +16,16 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       cartItems: [],
       addToCart: (item) => set((state) => {
-        const existingItem = state.cartItems.find(i => i.productId === item.productId);
+        const existingItem = state.cartItems.find(i => 
+          i.productId === item.productId && 
+          JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions) &&
+          i.note === item.note
+        );
+
         if (existingItem) {
           return {
             cartItems: state.cartItems.map(i => 
-              i.productId === item.productId 
+              i.id === existingItem.id 
                 ? { ...i, quantity: i.quantity + item.quantity } 
                 : i
             )

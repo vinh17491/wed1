@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Plus, Minus, Tag, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
@@ -20,16 +20,15 @@ export function CartDrawer() {
   const [couponError, setCouponError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const subtotal = getCartTotal();
+  const subtotal = useMemo(() => getCartTotal(), [cartItems, getCartTotal]);
   
-  let discount = 0;
-  if (coupon) {
+  const discount = useMemo(() => {
+    if (!coupon) return 0;
     if (coupon.type === 'percent') {
-      discount = subtotal * (coupon.value / 100);
-    } else {
-      discount = coupon.value;
+      return subtotal * (coupon.value / 100);
     }
-  }
+    return coupon.value;
+  }, [coupon, subtotal]);
   
   const finalTotal = Math.max(0, subtotal - discount);
 

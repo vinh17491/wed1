@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useProductStore } from '../../store/useProductStore';
 import { useExtraStore } from '../../store/useExtraStore';
@@ -19,20 +19,21 @@ export function ProductGrid() {
   const { products } = useProductStore();
   const { filters } = useExtraStore();
   
-  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Apply filters
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(filters.search.toLowerCase()) || 
-                          product.description.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesCategory = filters.category === 'All' || product.category === filters.category;
-    const matchesPrice = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
-    
-    return matchesSearch && matchesCategory && matchesPrice;
-  });
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch = product.name.toLowerCase().includes(filters.search.toLowerCase()) || 
+                            product.description.toLowerCase().includes(filters.search.toLowerCase());
+      const matchesCategory = filters.category === 'All' || product.category === filters.category;
+      const matchesPrice = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
+      
+      return matchesSearch && matchesCategory && matchesPrice;
+    });
+  }, [products, filters]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -40,9 +41,8 @@ export function ProductGrid() {
   }, [filters]);
 
   // Update displayed products when page or filtered list changes
-  useEffect(() => {
-    const currentItems = filteredProducts.slice(0, page * itemsPerPage);
-    setDisplayedProducts(currentItems);
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, page * itemsPerPage);
   }, [page, filteredProducts]);
 
   // Intersection Observer for infinite scroll
