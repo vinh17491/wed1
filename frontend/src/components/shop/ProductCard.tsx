@@ -49,7 +49,8 @@ export const ProductCard = memo(function ProductCard({ product, index }: Product
         visible: { opacity: 1, y: 0 }
       }}
       onClick={handleProductClick}
-      className="group relative bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-all duration-300"
+      whileHover={{ scale: 1.05 }}
+      className="group relative bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all duration-300"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-800">
         <img 
@@ -75,7 +76,7 @@ export const ProductCard = memo(function ProductCard({ product, index }: Product
             ${product.price.toFixed(2)}
           </div>
           <motion.button
-            whileTap={{ scale: isAdding ? 1 : 0.9 }}
+            whileTap={{ scale: isAdding ? 1 : 0.95 }}
             onClick={handleAddToCart}
             disabled={isAdding}
             className={`p-2 rounded-xl transition-all flex items-center justify-center ${

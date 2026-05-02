@@ -12,6 +12,7 @@ export function ProductDetailModal() {
   const [activeImage, setActiveImage] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const [zoomStyle, setZoomStyle] = useState({ display: 'none', backgroundPosition: '50% 50%' });
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -27,11 +28,12 @@ export function ProductDetailModal() {
   // Reset states when modal opens/closes
   useEffect(() => {
     if (!isProductModalOpen) {
-      setTimeout(() => {
-        setActiveImage(0);
-        setIsAdded(false);
-        setIsAdding(false);
-      }, 300);
+        setTimeout(() => {
+          setActiveImage(0);
+          setIsAdded(false);
+          setIsAdding(false);
+          setQuantity(1);
+        }, 300);
     }
   }, [isProductModalOpen]);
 
@@ -47,7 +49,7 @@ export function ProductDetailModal() {
       id: crypto.randomUUID(),
       productId: selectedProduct.id,
       product: selectedProduct,
-      quantity: 1
+      quantity: quantity
     });
     
     setIsAdding(false);
@@ -99,7 +101,7 @@ export function ProductDetailModal() {
             </button>
 
             {/* Left: Image Gallery */}
-            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col gap-6 bg-slate-950/50">
+            <div className="w-full md:w-[60%] p-6 md:p-8 flex flex-col gap-6 bg-slate-950/50">
               <div 
                 className="relative aspect-square rounded-2xl overflow-hidden cursor-zoom-in group border border-slate-800/50 bg-slate-900"
                 onMouseMove={handleMouseMove}
@@ -117,7 +119,7 @@ export function ProductDetailModal() {
                   style={{
                     ...zoomStyle,
                     backgroundImage: `url(${selectedProduct.gallery[activeImage] || selectedProduct.image})`,
-                    backgroundSize: '150%', // Premium 1.5x zoom
+                    backgroundSize: '130%', // Premium 1.3x zoom as requested
                     backgroundRepeat: 'no-repeat',
                   }}
                 />
@@ -144,7 +146,7 @@ export function ProductDetailModal() {
             </div>
 
             {/* Right: Details */}
-            <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto">
+            <div className="w-full md:w-[40%] p-6 md:p-10 flex flex-col overflow-y-auto">
               <div className="mb-3 text-emerald-400 font-bold text-sm tracking-widest uppercase">
                 {selectedProduct.category}
               </div>
@@ -165,40 +167,66 @@ export function ProductDetailModal() {
                 ${selectedProduct.price.toFixed(2)}
               </div>
 
-              <div className="prose prose-lg prose-invert prose-emerald mb-10 text-slate-300 leading-relaxed">
+              <div className="prose prose-lg prose-invert prose-emerald mb-8 text-slate-300 leading-relaxed">
                 <p>{selectedProduct.description}</p>
               </div>
 
-              <div className="mt-auto pt-8">
-                <motion.button
-                  whileTap={{ scale: (isAdding || isAdded) ? 1 : 0.98 }}
-                  onClick={handleAddToCart}
-                  disabled={isAdding || isAdded}
-                  className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
-                    isAdded 
-                      ? 'bg-emerald-600 text-white' 
-                      : isAdding
-                      ? 'bg-emerald-500/50 text-emerald-100 cursor-wait'
-                      : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]'
-                  }`}
-                >
-                  {isAdding ? (
-                    <>
-                      <Loader2 className="w-6 h-6 animate-spin" /> Processing...
-                    </>
-                  ) : isAdded ? (
-                    <>
-                      <Check className="w-6 h-6" /> Added to Cart
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-6 h-6" /> Add to Cart
-                    </>
-                  )}
-                </motion.button>
-                <p className="text-center text-sm text-slate-500 mt-4">
-                  Instant digital delivery to your email
-                </p>
+              <div className="mt-auto pt-6 border-t border-slate-800/50">
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="text-slate-400 font-medium">Quantity:</span>
+                  <div className="flex items-center bg-slate-950 rounded-xl border border-slate-800 p-1">
+                    <motion.button
+                      whileTap={{ scale: quantity > 1 ? 0.9 : 1 }}
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </motion.button>
+                    <div className="w-12 text-center font-bold text-white text-lg select-none">
+                      {quantity}
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <motion.button
+                    whileTap={{ scale: (isAdding || isAdded) ? 1 : 0.98 }}
+                    onClick={handleAddToCart}
+                    disabled={isAdding || isAdded}
+                    className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
+                      isAdded 
+                        ? 'bg-emerald-600 text-white' 
+                        : isAdding
+                        ? 'bg-emerald-500/50 text-emerald-100 cursor-wait'
+                        : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]'
+                    }`}
+                  >
+                    {isAdding ? (
+                      <>
+                        <Loader2 className="w-6 h-6 animate-spin" /> Processing...
+                      </>
+                    ) : isAdded ? (
+                      <>
+                        <Check className="w-6 h-6" /> Added to Cart
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-6 h-6" /> Add to Cart
+                      </>
+                    )}
+                  </motion.button>
+                  <p className="text-center text-sm text-slate-500 mt-4">
+                    Instant digital delivery to your email
+                  </p>
+                </div>
               </div>
             </div>
           </motion.div>
