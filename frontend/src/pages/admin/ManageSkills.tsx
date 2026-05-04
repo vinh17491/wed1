@@ -8,10 +8,21 @@ export default function ManageSkills() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     loadSkills();
   }, []);
+
+  // Auto-clear feedback
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
 
   const loadSkills = async () => {
     setLoading(true);
@@ -19,19 +30,24 @@ export default function ManageSkills() {
       const res = await skillsApi.getAll();
       setSkills(res.data.data);
     } catch {
-      alert('Failed to load skills');
+      setFeedback({ type: 'error', message: 'Failed to load skills. Please refresh the page.' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
+    if (isDeleting) return; // Prevent double-click
     if (!confirm('Are you sure you want to delete this skill?')) return;
+    setIsDeleting(id);
     try {
       await skillsApi.delete(id);
+      setFeedback({ type: 'success', message: 'Skill deleted successfully.' });
       loadSkills();
     } catch {
-      alert('Failed to delete skill');
+      setFeedback({ type: 'error', message: 'Failed to delete skill.' });
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -47,21 +63,51 @@ export default function ManageSkills() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double-click
+
+    // Validation
+    if (!editing.name?.trim()) {
+      setFeedback({ type: 'error', message: 'Skill name is required.' });
+      return;
+    }
+    if (editing.proficiencyLevel < 0 || editing.proficiencyLevel > 100) {
+      setFeedback({ type: 'error', message: 'Proficiency must be between 0 and 100.' });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       if (editing.id) {
         await skillsApi.update(editing.id, editing);
       } else {
         await skillsApi.create(editing);
       }
+      setFeedback({ type: 'success', message: `Skill ${editing.id ? 'updated' : 'created'} successfully.` });
       setShowModal(false);
       loadSkills();
     } catch {
-      alert('Failed to save skill');
+      setFeedback({ type: 'error', message: 'Failed to save skill. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <AdminLayout title="Manage Skills">
+      {/* Feedback Toast */}
+      {feedback && (
+        <div style={{
+          position: 'fixed', top: 24, right: 24, zIndex: 9999, padding: '12px 20px',
+          borderRadius: 12, fontWeight: 600, fontSize: '0.9rem',
+          background: feedback.type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+          color: feedback.type === 'success' ? '#10b981' : '#ef4444',
+          border: `1px solid ${feedback.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
+          backdropFilter: 'blur(10px)', animation: 'fadeIn 0.3s ease'
+        }}>
+          {feedback.type === 'success' ? '✅' : '❌'} {feedback.message}
+        </div>
+      )}
+
       <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p style={{ color: 'var(--text-muted)' }}>List of technical skills shown on your portfolio</p>
         <button className="btn btn--primary btn--sm" onClick={handleAddNew}>+ Add New Skill</button>
@@ -99,7 +145,9 @@ export default function ManageSkills() {
                     <td>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button className="btn btn--icon btn--sm" onClick={() => handleEdit(s)}>✏️</button>
-                        <button className="btn btn--icon btn--sm" style={{ color: 'var(--error)' }} onClick={() => handleDelete(s.id)}>🗑️</button>
+                        <button className="btn btn--icon btn--sm" style={{ color: 'var(--error)' }} onClick={() => handleDelete(s.id)} disabled={isDeleting === s.id}>
+                          {isDeleting === s.id ? '⏳' : '🗑️'}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -150,7 +198,9 @@ export default function ManageSkills() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-                  <button type="submit" className="btn btn--primary">Save Skill</button>
+                  <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
+                    {isSubmitting ? '⏳ Saving...' : 'Save Skill'}
+                  </button>
                   <button type="button" className="btn btn--outline" onClick={() => setShowModal(false)}>Cancel</button>
                 </div>
               </form>

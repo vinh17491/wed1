@@ -11,16 +11,20 @@ export default function AnalyticsDashboard() {
   const pageSize = 20;
 
   useEffect(() => {
-    loadLogs();
+    const controller = new AbortController();
+    loadLogs(controller.signal);
+    return () => controller.abort();
   }, [page]);
 
-  const loadLogs = async () => {
+  const loadLogs = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await analyticsApi.getLogs(page, pageSize);
+      // Assuming analyticsApi supports signal in axios config
+      const res = await analyticsApi.getLogs(page, pageSize, { signal });
       setLogs(res.data.data);
       setTotal(res.data.total);
-    } catch {
+    } catch (err: any) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') return;
       alert('Failed to load analytics logs');
     } finally {
       setLoading(false);

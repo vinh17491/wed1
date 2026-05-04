@@ -7,7 +7,7 @@ const ThemeContext = createContext<ThemeContextType>({ theme: 'dark', toggleThem
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme') as Theme;
-    if (saved) return saved;
+    if (saved === 'dark' || saved === 'light') return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
@@ -49,14 +49,44 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {} 
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
+/**
+ * Safely parse user data from localStorage.
+ * Returns null if data is missing, corrupt, or has wrong structure.
+ */
+const loadUserFromStorage = (): User | null => {
+  try {
     const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    // Validate structure
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      typeof parsed.username === 'string' &&
+      typeof parsed.role === 'string'
+    ) {
+      return parsed as User;
+    }
+    // Corrupted data — clean up
+    console.warn('[Auth] Invalid user data in localStorage, clearing.');
+    localStorage.removeItem('user');
+    return null;
+  } catch (err) {
+    console.error('[Auth] Failed to parse user from localStorage:', err);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(loadUserFromStorage);
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'));
 
   const login = (token: string, username: string, role: string) => {
+    if (!token || !username) {
+      console.error('[Auth] login called with empty token or username');
+      return;
+    }
     const userData = { username, role };
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));

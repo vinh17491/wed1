@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chatApi } from '../api';
 import i18n from '../i18n';
@@ -8,6 +8,8 @@ interface Message {
   id: number; role: 'bot' | 'user'; content: string; timestamp: Date;
 }
 
+const MAX_MESSAGES = 100;
+
 export default function Chatbot() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -16,39 +18,70 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
+
+  const isMounted = useRef(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const msgIdRef = useRef(1); // monotonic counter for unique IDs
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, typing]);
+    return () => {
+      isMounted.current = false;
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
-  const send = async () => {
+  useEffect(() => {
+    if (open) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, typing, open]);
+
+  const send = useCallback(async () => {
     if (!input.trim() || typing) return;
-    const userMsg: Message = { id: Date.now(), role: 'user', content: input, timestamp: new Date() };
-    setMessages(m => [...m, userMsg]);
+
+    // Cancel any in-flight request
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+
+    msgIdRef.current += 1;
+    const userMsg: Message = { id: msgIdRef.current, role: 'user', content: input, timestamp: new Date() };
+    
+    setMessages(m => [...m, userMsg].slice(-MAX_MESSAGES));
     const q = input;
     setInput('');
     setTyping(true);
 
     try {
       const res = await chatApi.send(q, i18n.language);
+      if (!isMounted.current) return;
+      
+      msgIdRef.current += 1;
       const botMsg: Message = {
-        id: Date.now() + 1,
+        id: msgIdRef.current,
         role: 'bot',
         content: res.data.data?.message || 'Sorry, I could not process that.',
         timestamp: new Date()
       };
-      setMessages(m => [...m, botMsg]);
-    } catch {
+      setMessages(m => [...m, botMsg].slice(-MAX_MESSAGES));
+    } catch (err: unknown) {
+      if (!isMounted.current) return;
+      // Don't show error for aborted requests
+      if (err instanceof Error && err.name === 'AbortError') return;
+      if (err && typeof err === 'object' && 'code' in err && (err as any).code === 'ERR_CANCELED') return;
+
+      msgIdRef.current += 1;
       setMessages(m => [...m, {
-        id: Date.now() + 1, role: 'bot',
+        id: msgIdRef.current, role: 'bot' as const,
         content: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date()
-      }]);
+      }].slice(-MAX_MESSAGES));
     } finally {
-      setTyping(false);
+      if (isMounted.current) {
+        setTyping(false);
+      }
     }
-  };
+  }, [input, typing]);
 
   const formatTime = (d: Date) =>
     d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

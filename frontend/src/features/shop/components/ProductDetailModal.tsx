@@ -6,7 +6,7 @@ import { useCartStore } from '../../../store/useCartStore';
 import { FakeStarRating } from './FakeStarRating';
 
 export function ProductDetailModal() {
-  const { selectedProduct, isProductModalOpen, closeProductModal } = useUIStore();
+  const { selectedProduct, isProductModalOpen, closeProductModal, clearSelectedProduct } = useUIStore();
   const { addToCart } = useCartStore();
   
   const [activeImage, setActiveImage] = useState(0);
@@ -27,15 +27,20 @@ export function ProductDetailModal() {
 
   // Reset states when modal opens/closes
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     if (!isProductModalOpen) {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           setActiveImage(0);
           setIsAdded(false);
           setIsAdding(false);
           setQuantity(1);
+          clearSelectedProduct(); // Final cleanup after exit animation
         }, 300);
     }
-  }, [isProductModalOpen]);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isProductModalOpen, clearSelectedProduct]);
 
   if (!selectedProduct) return null;
 
@@ -53,7 +58,8 @@ export function ProductDetailModal() {
     
     setIsAdding(false);
     setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2500);
+    const timer = setTimeout(() => setIsAdded(false), 2500);
+    return () => clearTimeout(timer);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

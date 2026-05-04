@@ -15,7 +15,7 @@ export interface CartItem {
   productId: string;
   product: Product;
   quantity: number;
-  selectedOptions?: string[];
+  selectedOptions?: Record<string, string>;
   note?: string;
 }
 

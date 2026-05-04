@@ -16,6 +16,7 @@ interface UIState {
   
   openProductModal: (product: Product) => void;
   closeProductModal: () => void;
+  clearSelectedProduct: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -29,5 +30,7 @@ export const useUIStore = create<UIState>((set) => ({
   closeModal: () => set({ activeModal: null }),
   
   openProductModal: (product) => set({ selectedProduct: product, isProductModalOpen: true }),
-  closeProductModal: () => set({ isProductModalOpen: false, selectedProduct: null }),
+  closeProductModal: () => set({ isProductModalOpen: false }),
+  // Delayed clear: call this AFTER exit animation completes to prevent UI flicker
+  clearSelectedProduct: () => set({ selectedProduct: null }),
 }));

@@ -7,6 +7,6 @@ export const analyticsApi = {
   getSummary: () => 
     api.get('/analytics/summary'),
 
-  getLogs: (page: number, pageSize: number) =>
-    api.get('/analytics/logs', { params: { page, pageSize } }),
+  getLogs: (page: number, pageSize: number, config?: any) =>
+    api.get('/analytics/logs', { params: { page, pageSize }, ...config }),
 };
