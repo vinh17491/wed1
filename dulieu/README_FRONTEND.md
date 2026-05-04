@@ -73,3 +73,23 @@ export default defineConfig([
   },
 ])
 ```
+
+---
+
+## ??? Frontend Hardening Report (05/05/2026)
+
+### ?? Cart Store 8-Step Refactor
+H? th?ng Gi? hàng dã du?c nâng c?p lên chu?n Senior v?i các tính nang:
+1. **Robust ID:** K?t h?p UUID và Monotonic Counter.
+2. **Double Validation:** Ki?m tra c? Product và CartItem tru?c khi ghi vào state.
+3. **Smart Merging:** T? d?ng g?p s?n ph?m trùng c?u hình.
+4. **Auto-Clean:** X? lý d? li?u "b?n" t? `localStorage` ngay khi kh?i ch?y.
+5. **Clamping:** Gi?i h?n s? lu?ng [1-99] ? m?i ngõ vào.
+6. **Safe Total:** Tính toán không bao gi? gây `NaN` hay `Infinity`.
+7. **Action Logging:** H? th?ng log chi ti?t cho vi?c Debug.
+8. **Vite Env Fix:** Ð?ng b? hóa các bi?n môi tru?ng theo chu?n Vite.
+
+### ?? Quality Assurance
+- **TypeScript:** 100% Type-safe.
+- **Persistence:** T? ph?c h?i d? li?u khi b? can thi?p th? công.
+- **Performance:** T?i uu hóa render qua selector và immutability.

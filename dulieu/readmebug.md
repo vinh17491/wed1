@@ -101,5 +101,21 @@ if (!CONFIG.SUPABASE.URL) throw new Error('Supabase URL is required');
 - **Fix:** Trì hoãn set `null` cho đến khi modal đã exit xong.
 
 ---
-**Báo cáo này được tạo để hỗ trợ việc refactor hệ thống lên chuẩn Enterprise.**
-"Code with Passion, Review with Courage."
+
+## 7. RESOLVED BUGS (ĐÃ XỬ LÝ) - 05/05/2026
+
+### ✅ 🔴 [FIXED] Chatbot Runtime Crash
+- **Lỗi:** `messagesEndRef` chưa khai báo gây crash app.
+- **Xử lý:** Khai báo `useRef`, thêm logic scroll mượt mà và AbortController để chống leak memory.
+
+### ✅ 🔴 [FIXED] Cart ID Collision & Corruption
+- **Lỗi:** ID trùng khi click nhanh, crash khi dữ liệu localStorage bị hỏng.
+- **Xử lý:** Refactor 8 bước (generateId, Validation Layer, Clamping quantity, Safe Rehydration).
+
+### ✅ 🟡 [FIXED] Supabase Silent Failure
+- **Lỗi:** App chạy với URL rỗng gây lỗi API khó debug.
+- **Xử lý:** Thêm cảnh báo và fallback dummy keys để app vẫn boot được UI nhưng báo lỗi rõ ràng.
+
+---
+**Báo cáo này được cập nhật để phản ánh trạng thái hệ thống sau khi refactor.**
+*(Cập nhật ngày 05/05/2026)*

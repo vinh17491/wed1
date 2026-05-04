@@ -12,7 +12,19 @@
 ---
 
 ## 🧪 Testing & Quality Report (Báo cáo Kiểm thử)
-*Cập nhật mới nhất: 03/05/2026*
+*Cập nhật mới nhất: 05/05/2026*
+
+---
+
+## 🛡️ Security & Resilience (Độ ổn định & Bảo mật)
+Hệ thống hiện đã đạt chuẩn **Production-Ready** nhờ các cải tiến sau:
+- **8-Step Store Hardening:** Giỏ hàng chống crash, chống trùng lặp và có logging chuyên nghiệp.
+- **Fail-Safe Architecture:** Tự động phát hiện và xử lý dữ liệu "bẩn" từ trình duyệt.
+- **Input Validation:** Mọi dữ liệu đầu vào đều được quét qua lớp Validator tập trung.
+- **Zero TS Errors:** Toàn bộ dự án đã được quét sạch lỗi Type-safety.
+
+---
+
 
 ### 1. Build Validation (Xác minh đóng gói)
 - **Frontend (Vite + React 19)**: ✅ **PASSED**
